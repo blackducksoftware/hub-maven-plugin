@@ -1,2 +1,6 @@
 /target/
 /pom.xml.bak
+/.project
+/.classpath
+/.DS_Store
+/.settings/
