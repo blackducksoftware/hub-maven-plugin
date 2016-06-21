@@ -3,8 +3,8 @@ Hub plugin for Maven. This plugin provides ability to generate a Black Duck I/O 
 
 Goals:
 
-createBDIOFile - generates the file in the target folder during the packaging phase.
-deployToHub - uploads the Black Duck I/O file up to the hub server.
+* generateHubOutput - generates the file in the target folder during the packaging phase.
+* deployToHub - uploads the Black Duck I/O file up to the hub server.
 ```
     <build>
        <plugins>
@@ -16,7 +16,7 @@ deployToHub - uploads the Black Duck I/O file up to the hub server.
                    <execution>
                        <phase>package</phase>
                        <goals>
-                           <goal>createBDIOFile</goal>
+                           <goal>generateHubOutput</goal>
                            <goal>deployToHub</goal>
                        </goals>
                    </execution>
