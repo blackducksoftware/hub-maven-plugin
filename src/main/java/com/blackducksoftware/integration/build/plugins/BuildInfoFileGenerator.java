@@ -50,7 +50,7 @@ import com.blackducksoftware.integration.build.bdio.BdioIdCreator;
 import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
 import com.blackducksoftware.integration.build.bdio.Gav;
 
-@Mojo(name = "generateHubOutput", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "createHubOutput", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoFileGenerator extends AbstractMojo {
 
 	private static final String MSG_FILE_TO_GENERATE = "File to generate: ";

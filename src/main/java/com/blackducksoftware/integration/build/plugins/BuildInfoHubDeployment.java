@@ -43,7 +43,7 @@ import com.blackducksoftware.integration.hub.global.HubProxyInfo;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
 
-@Mojo(name = "deployToHub", defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "deployHubOutput", defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoHubDeployment extends AbstractMojo {
 
 	@Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
