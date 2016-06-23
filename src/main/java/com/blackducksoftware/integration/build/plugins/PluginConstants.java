@@ -22,8 +22,6 @@
 package com.blackducksoftware.integration.build.plugins;
 
 public class PluginConstants {
-
-	public static final String BDIO_FILE_SUFFIX = "_bdio.json";
 	public static final String DIRECTORY_TARGET = "target";
 
 	public static final String PARAM_PROJECT = "${project}";
@@ -38,4 +36,5 @@ public class PluginConstants {
 	public static final String PARAM_HUB_PROXY_NO_HOSTS = "${hub-proxy-no-hosts}";
 	public static final String PARAM_HUB_PROXY_USER = "${hub-proxy-user}";
 	public static final String PARAM_HUB_PROXY_PASSWORD = "${hub-proxy-password}";
+
 }

@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.builder.ValidationResultEnum;
 import com.blackducksoftware.integration.hub.builder.ValidationResults;
@@ -45,7 +46,6 @@ import com.blackducksoftware.integration.hub.rest.RestConnection;
 
 @Mojo(name = "deployHubOutput", defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoHubDeployment extends AbstractMojo {
-
 	@Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
 	private MavenProject project;
 
@@ -57,26 +57,34 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_URL, readonly = true)
 	private String hubUrl;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_USER, readonly = true)
 	private String hubUser;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PASSWORD, readonly = true)
 	private String hubPassword;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_TIMEOUT, readonly = true)
 	private String hubTimeout;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_HOST, readonly = true)
 	private String hubProxyHost;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_PORT, readonly = true)
 	private String hubProxyPort;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_NO_HOSTS, readonly = true)
 	private String hubNoProxyHosts;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_USER, readonly = true)
 	private String hubProxyUser;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_PASSWORD, readonly = true)
 	private String hubProxyPassword;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = "BlackDuck Software " + project.getName() + PluginConstants.BDIO_FILE_SUFFIX
+		final String pluginTaskString = "BlackDuck Software " + project.getName() + Constants.BDIO_FILE_SUFFIX
 				+ " file deployment";
 		getLog().info(pluginTaskString + " starting...");
 
@@ -134,4 +142,5 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 			}
 		}
 	}
+
 }
