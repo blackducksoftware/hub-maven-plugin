@@ -25,7 +25,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -117,10 +116,8 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 	private void uploadFileToHub(final HubServerConfig config) throws URISyntaxException {
 		final RestConnection connection = new RestConnection(config.getHubUrl().toString());
 		final HubProxyInfo proxyInfo = config.getProxyInfo();
-		if (StringUtils.isNotBlank(proxyInfo.getHost()) && proxyInfo.getPort() != 0) {
-			if (proxyInfo.shouldUseProxyForUrl(config.getHubUrl())) {
-				connection.setProxyProperties(proxyInfo);
-			}
+		if (proxyInfo.shouldUseProxyForUrl(config.getHubUrl())) {
+			connection.setProxyProperties(proxyInfo);
 		}
 
 		// final HubIntRestService service = new HubIntRestService(connection);
