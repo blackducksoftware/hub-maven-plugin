@@ -48,11 +48,11 @@ import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNo
 import com.blackducksoftware.integration.build.bdio.BdioConverter;
 import com.blackducksoftware.integration.build.bdio.BdioIdCreator;
 import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
+import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.build.bdio.Gav;
 
 @Mojo(name = "createHubOutput", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoFileGenerator extends AbstractMojo {
-
 	private static final String MSG_FILE_TO_GENERATE = "File to generate: ";
 	private static final String EXCEPTION_MSG_FILE_NOT_CREATED = "Could not generate bdio file";
 	private static final String EXCEPTION_MSG_DEPENDENCY_NODE_NULL = "Dependency graph is null";
@@ -72,7 +72,7 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = "BlackDuck Software " + project.getName() + PluginConstants.BDIO_FILE_SUFFIX
+		final String pluginTaskString = "BlackDuck Software " + project.getName() + Constants.BDIO_FILE_SUFFIX
 				+ " file generation";
 		getLog().info(pluginTaskString + " starting...");
 		final DependencyNode rootNode = getRootDependencyNode();
@@ -81,7 +81,6 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 	}
 
 	private DependencyNode getRootDependencyNode() throws MojoExecutionException {
-
 		DependencyNode rootNode = null;
 		final ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest(
 				session.getProjectBuildingRequest());
@@ -111,7 +110,7 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 				getLog().info("Project File: " + pomFile.getCanonicalPath());
 				final Gav projectGav = new Gav(project.getGroupId(), project.getArtifactId(), project.getVersion());
 
-				final File file = new File(target, projectGav.getArtifactId() + PluginConstants.BDIO_FILE_SUFFIX);
+				final File file = new File(target, projectGav.getArtifactId() + Constants.BDIO_FILE_SUFFIX);
 
 				getLog().info(MSG_FILE_TO_GENERATE + file.getCanonicalPath());
 
@@ -141,4 +140,5 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 		}
 		return new com.blackducksoftware.integration.build.bdio.DependencyNode(gav, children);
 	}
+
 }
