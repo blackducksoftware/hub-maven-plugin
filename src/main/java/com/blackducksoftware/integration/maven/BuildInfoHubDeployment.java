@@ -47,6 +47,7 @@ import com.blackducksoftware.integration.hub.HubSupportHelper;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.builder.ValidationResultEnum;
 import com.blackducksoftware.integration.hub.builder.ValidationResults;
+import com.blackducksoftware.integration.hub.capabilities.HubCapabilitiesEnum;
 import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.EncryptionException;
 import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
@@ -144,7 +145,7 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 			urlSegments.add("bom-import");
 			final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
 			final File file = new File(target, helper.getBDIOFileName(project));
-			final FileRepresentation content = new FileRepresentation(file, MediaType.APPLICATION_ALL_JSON);
+			final FileRepresentation content = new FileRepresentation(file, MediaType.APPLICATION_JSON);
 			final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
 
 			logger.info("Uploaded the file: " + file + " to " + location);
@@ -173,6 +174,6 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 		final HubIntRestService service = new HubIntRestService(restConnection);
 		final HubSupportHelper hubSupport = new HubSupportHelper();
 		hubSupport.checkHubSupport(service, logger);
-		return hubSupport.isBomFileUploadSupported();
+		return hubSupport.hasCapability(HubCapabilitiesEnum.BOM_FILE_UPLOAD);
 	}
 }
