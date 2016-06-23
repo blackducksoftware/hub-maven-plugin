@@ -19,23 +19,15 @@
  * specific language governing permissions and limitations
  * under the License.
  *******************************************************************************/
-package com.blackducksoftware.integration.build.plugins;
+package com.blackducksoftware.integration.maven;
 
-public class PluginConstants {
+import org.apache.maven.project.MavenProject;
 
-	public static final String BDIO_FILE_SUFFIX = "_bdio.json";
-	public static final String DIRECTORY_TARGET = "target";
+import com.blackducksoftware.integration.build.bdio.Constants;
 
-	public static final String PARAM_PROJECT = "${project}";
-	public static final String PARAM_SESSION = "${session}";
-	public static final String PARAM_TARGET_DIR = "${project.build.directory}";
-	public static final String PARAM_HUB_URL = "${hub-url}";
-	public static final String PARAM_HUB_USER = "${hub-user}";
-	public static final String PARAM_HUB_PASSWORD = "${hub-password}";
-	public static final String PARAM_HUB_TIMEOUT = "${hub-timeout}";
-	public static final String PARAM_HUB_PROXY_HOST = "${hub-proxy-host}";
-	public static final String PARAM_HUB_PROXY_PORT = "${hub-proxy-port}";
-	public static final String PARAM_HUB_PROXY_NO_HOSTS = "${hub-proxy-no-hosts}";
-	public static final String PARAM_HUB_PROXY_USER = "${hub-proxy-user}";
-	public static final String PARAM_HUB_PROXY_PASSWORD = "${hub-proxy-password}";
+public class PluginHelper {
+
+	public String getBDIOFileName(final MavenProject project) {
+		return project.getArtifactId() + Constants.BDIO_FILE_SUFFIX;
+	}
 }

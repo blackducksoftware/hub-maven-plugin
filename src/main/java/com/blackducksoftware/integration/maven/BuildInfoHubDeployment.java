@@ -19,10 +19,15 @@
  * specific language governing permissions and limitations
  * under the License.
  *******************************************************************************/
-package com.blackducksoftware.integration.build.plugins;
+package com.blackducksoftware.integration.maven;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,14 +39,22 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.restlet.data.MediaType;
+import org.restlet.representation.FileRepresentation;
 
+import com.blackducksoftware.integration.hub.HubIntRestService;
+import com.blackducksoftware.integration.hub.HubSupportHelper;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.builder.ValidationResultEnum;
 import com.blackducksoftware.integration.hub.builder.ValidationResults;
+import com.blackducksoftware.integration.hub.exception.BDRestException;
+import com.blackducksoftware.integration.hub.exception.EncryptionException;
+import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
 import com.blackducksoftware.integration.hub.global.GlobalFieldKey;
 import com.blackducksoftware.integration.hub.global.HubProxyInfo;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
+import com.blackducksoftware.integration.maven.logging.MavenLogger;
 
 @Mojo(name = "deployHubOutput", defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoHubDeployment extends AbstractMojo {
@@ -74,11 +87,13 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_PASSWORD, readonly = true)
 	private String hubProxyPassword;
 
+	private final MavenLogger logger = new MavenLogger(getLog());
+	private final PluginHelper helper = new PluginHelper();
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = "BlackDuck Software " + project.getName() + PluginConstants.BDIO_FILE_SUFFIX
-				+ " file deployment";
-		getLog().info(pluginTaskString + " starting...");
+		final String pluginTaskString = "BlackDuck Software " + helper.getBDIOFileName(project) + " file deployment";
+		logger.info(pluginTaskString + " starting...");
 
 		final HubServerConfigBuilder builder = new HubServerConfigBuilder();
 		builder.setHubUrl(hubUrl);
@@ -99,14 +114,19 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 				uploadFileToHub(config);
 			} catch (final URISyntaxException e) {
 				throw new MojoExecutionException("Hub URI invalid", e);
+			} catch (final IllegalArgumentException | BDRestException | EncryptionException | IOException e) {
+				throw new MojoExecutionException("Cannot communicate with hub server.", e);
+			} catch (final ResourceDoesNotExistException e) {
+				throw new MojoExecutionException("Cannot upload the file to the hub server.", e);
 			}
 		} else {
 			logErrors(results);
 		}
-		getLog().info(pluginTaskString + " finished...");
+		logger.info(pluginTaskString + " finished...");
 	}
 
-	private void uploadFileToHub(final HubServerConfig config) throws URISyntaxException {
+	private void uploadFileToHub(final HubServerConfig config) throws URISyntaxException, IllegalArgumentException,
+			BDRestException, EncryptionException, IOException, ResourceDoesNotExistException {
 		final RestConnection connection = new RestConnection(config.getHubUrl().toString());
 		final HubProxyInfo proxyInfo = config.getProxyInfo();
 		if (StringUtils.isNotBlank(proxyInfo.getHost()) && proxyInfo.getPort() != 0) {
@@ -114,24 +134,45 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 				connection.setProxyProperties(proxyInfo);
 			}
 		}
+		connection.setCookies(config.getGlobalCredentials().getUsername(),
+				config.getGlobalCredentials().getDecryptedPassword());
 
-		// final HubIntRestService service = new HubIntRestService(connection);
-		// TODO: implement the rest call to upload the BDIO file
+		if (isUploadSupported(connection)) {
+			final List<String> urlSegments = new ArrayList<>();
+			urlSegments.add("api");
+			urlSegments.add("v1");
+			urlSegments.add("bom-import");
+			final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
+			final File file = new File(target, helper.getBDIOFileName(project));
+			final FileRepresentation content = new FileRepresentation(file, MediaType.APPLICATION_ALL_JSON);
+			final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
+
+			logger.info("Uploaded the file: " + file + " to " + location);
+		} else {
+			logger.error("The hub server does not support file deployment of " + helper.getBDIOFileName(project));
+		}
 	}
 
 	private void logErrors(final ValidationResults<GlobalFieldKey, HubServerConfig> results) {
-		getLog().error("Invalid Hub Server Configuration skipping file deployment");
-		getLog().error("Caused by: ");
+		logger.error("Invalid Hub Server Configuration skipping file deployment");
+		logger.error("Caused by: ");
 
 		final Set<GlobalFieldKey> keySet = results.getResultMap().keySet();
 
 		for (final GlobalFieldKey key : keySet) {
 			if (results.hasWarnings(key)) {
-				getLog().warn(results.getResultString(key, ValidationResultEnum.WARN));
+				logger.warn(results.getResultString(key, ValidationResultEnum.WARN));
 			}
 			if (results.hasErrors(key)) {
-				getLog().error(results.getResultString(key, ValidationResultEnum.ERROR));
+				logger.error(results.getResultString(key, ValidationResultEnum.ERROR));
 			}
 		}
+	}
+
+	private boolean isUploadSupported(final RestConnection restConnection) throws URISyntaxException, IOException {
+		final HubIntRestService service = new HubIntRestService(restConnection);
+		final HubSupportHelper hubSupport = new HubSupportHelper();
+		hubSupport.checkHubSupport(service, logger);
+		return hubSupport.isBomFileUploadSupported();
 	}
 }
