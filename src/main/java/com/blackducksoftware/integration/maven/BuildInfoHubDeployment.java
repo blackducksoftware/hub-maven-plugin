@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -59,7 +58,6 @@ import com.blackducksoftware.integration.maven.logging.MavenLogger;
 
 @Mojo(name = "deployHubOutput", defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoHubDeployment extends AbstractMojo {
-
 	@Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
 	private MavenProject project;
 
@@ -71,20 +69,28 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_URL, readonly = true)
 	private String hubUrl;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_USER, readonly = true)
 	private String hubUser;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PASSWORD, readonly = true)
 	private String hubPassword;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_TIMEOUT, readonly = true)
 	private String hubTimeout;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_HOST, readonly = true)
 	private String hubProxyHost;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_PORT, readonly = true)
 	private String hubProxyPort;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_NO_HOSTS, readonly = true)
 	private String hubNoProxyHosts;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_USER, readonly = true)
 	private String hubProxyUser;
+
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_PASSWORD, readonly = true)
 	private String hubProxyPassword;
 
@@ -130,10 +136,8 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 			BDRestException, EncryptionException, IOException, ResourceDoesNotExistException {
 		final RestConnection connection = new RestConnection(config.getHubUrl().toString());
 		final HubProxyInfo proxyInfo = config.getProxyInfo();
-		if (StringUtils.isNotBlank(proxyInfo.getHost()) && proxyInfo.getPort() != 0) {
-			if (proxyInfo.shouldUseProxyForUrl(config.getHubUrl())) {
-				connection.setProxyProperties(proxyInfo);
-			}
+		if (proxyInfo.shouldUseProxyForUrl(config.getHubUrl())) {
+			connection.setProxyProperties(proxyInfo);
 		}
 		connection.setCookies(config.getGlobalCredentials().getUsername(),
 				config.getGlobalCredentials().getDecryptedPassword());
@@ -176,4 +180,5 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 		hubSupport.checkHubSupport(service, logger);
 		return hubSupport.hasCapability(HubCapabilitiesEnum.BOM_FILE_UPLOAD);
 	}
+
 }

@@ -52,7 +52,6 @@ import com.blackducksoftware.integration.maven.logging.MavenLogger;
 
 @Mojo(name = "createHubOutput", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoFileGenerator extends AbstractMojo {
-
 	private static final String MSG_FILE_TO_GENERATE = "File to generate: ";
 	private static final String EXCEPTION_MSG_FILE_NOT_CREATED = "Could not generate bdio file";
 	private static final String EXCEPTION_MSG_DEPENDENCY_NODE_NULL = "Dependency graph is null";
@@ -83,7 +82,6 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 	}
 
 	private DependencyNode getRootDependencyNode() throws MojoExecutionException {
-
 		DependencyNode rootNode = null;
 		final ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest(
 				session.getProjectBuildingRequest());
@@ -109,10 +107,7 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 			}
 
 			try {
-				final File pomFile = project.getFile();
-				logger.info("Project File: " + pomFile.getCanonicalPath());
 				final File file = new File(target, helper.getBDIOFileName(project));
-
 				logger.info(MSG_FILE_TO_GENERATE + file.getCanonicalPath());
 
 				try (final OutputStream outputStream = new FileOutputStream(file)) {
@@ -140,4 +135,5 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 		}
 		return new com.blackducksoftware.integration.build.bdio.DependencyNode(gav, children);
 	}
+
 }
