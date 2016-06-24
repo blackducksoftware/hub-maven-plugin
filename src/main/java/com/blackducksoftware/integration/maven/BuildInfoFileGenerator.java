@@ -46,7 +46,6 @@ import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 
 import com.blackducksoftware.integration.build.bdio.BdioConverter;
-import com.blackducksoftware.integration.build.bdio.BdioIdCreator;
 import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
 import com.blackducksoftware.integration.build.bdio.Gav;
 import com.blackducksoftware.integration.maven.logging.MavenLogger;
@@ -119,10 +118,9 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 				try (final OutputStream outputStream = new FileOutputStream(file)) {
 					final com.blackducksoftware.integration.build.bdio.DependencyNode root = createCommonDependencyNode(
 							rootNode);
-					final BdioIdCreator mavenIdCreator = new BdioIdCreator();
-					final BdioConverter bdioConverter = new BdioConverter(mavenIdCreator);
+					final BdioConverter bdioConverter = new BdioConverter();
 					final CommonBomFormatter commonBomFormatter = new CommonBomFormatter(bdioConverter);
-					commonBomFormatter.writeProject(outputStream, project.getName(), pomFile.getCanonicalPath(), root);
+					commonBomFormatter.writeProject(outputStream, project.getName(), root);
 				}
 			} catch (final IOException e) {
 				throw new MojoExecutionException(EXCEPTION_MSG_FILE_NOT_CREATED, e);
