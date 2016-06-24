@@ -3,8 +3,31 @@ Hub plugin for Maven. This plugin provides ability to generate a Black Duck I/O 
 
 Goals:
 
-* generateHubOutput - generates the file in the target folder during the packaging phase.
-* deployToHub - uploads the Black Duck I/O file up to the hub server.
+* createHubOutput - generates the file in the target folder during the packaging phase.
+* deployHubOutput - uploads the Black Duck I/O file up to the hub server.
+
+## Repository Configuration
+In the repositories portion of the POM file add the repositories for the plugin and the Black Duck I/O dependencies:
+```
+    <repository>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>bds-int-public</id>
+      <url>https://updates.suite.blackducksoftware.com/integrations/</url>
+    </repository>
+```
+```    
+    <repository>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>oss.jfrog.org</id>
+      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
+    </repository>
+```
+## Plugin Configuration ##
+In the plugins portion of the POM file add the following hub-maven-plugin configuration:
 ```
     <build>
        <plugins>
@@ -16,8 +39,8 @@ Goals:
                    <execution>
                        <phase>package</phase>
                        <goals>
-                           <goal>generateHubOutput</goal>
-                           <goal>deployToHub</goal>
+                           <goal>createHubOutput</goal>
+                           <goal>deployHubOutput</goal>
                        </goals>
                    </execution>
                 </executions>

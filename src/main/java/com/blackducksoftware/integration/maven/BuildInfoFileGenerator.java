@@ -19,7 +19,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *******************************************************************************/
-package com.blackducksoftware.integration.build.plugins;
+package com.blackducksoftware.integration.maven;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,6 +49,7 @@ import com.blackducksoftware.integration.build.bdio.BdioConverter;
 import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
 import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.build.bdio.Gav;
+import com.blackducksoftware.integration.maven.logging.MavenLogger;
 
 @Mojo(name = "createHubOutput", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
 public class BuildInfoFileGenerator extends AbstractMojo {
@@ -69,14 +70,17 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 	@Component
 	private DependencyGraphBuilder dependencyGraphBuilder;
 
+	private final MavenLogger logger = new MavenLogger(getLog());
+	private final PluginHelper helper = new PluginHelper();
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = "BlackDuck Software " + project.getName() + Constants.BDIO_FILE_SUFFIX
-				+ " file generation";
+		final String pluginTaskString = String.format("BlackDuck Software %s%s file generation", project.getName(),
+				Constants.BDIO_FILE_SUFFIX);
 		getLog().info(pluginTaskString + " starting...");
 		final DependencyNode rootNode = getRootDependencyNode();
 		createBDIOFile(rootNode);
-		getLog().info(pluginTaskString + " finished...");
+		logger.info(pluginTaskString + " finished...");
 	}
 
 	private DependencyNode getRootDependencyNode() throws MojoExecutionException {
@@ -101,13 +105,12 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 			final CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
 			rootNode.accept(visitor);
 			for (final DependencyNode node : visitor.getNodes()) {
-				getLog().info(node.toNodeString());
+				logger.info(node.toNodeString());
 			}
 
 			try {
-				final Gav projectGav = new Gav(project.getGroupId(), project.getArtifactId(), project.getVersion());
-				final File file = new File(target, projectGav.getArtifactId() + Constants.BDIO_FILE_SUFFIX);
-				getLog().info(MSG_FILE_TO_GENERATE + file.getCanonicalPath());
+				final File file = new File(target, helper.getBDIOFileName(project));
+				logger.info(MSG_FILE_TO_GENERATE + file.getCanonicalPath());
 
 				try (final OutputStream outputStream = new FileOutputStream(file)) {
 					final com.blackducksoftware.integration.build.bdio.DependencyNode root = createCommonDependencyNode(
