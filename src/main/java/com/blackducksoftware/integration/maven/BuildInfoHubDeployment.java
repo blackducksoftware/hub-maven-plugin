@@ -99,7 +99,7 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = "BlackDuck Software " + helper.getBDIOFileName(project) + " file generation";
+		final String pluginTaskString = "BlackDuck Software " + helper.getBDIOFileName(project) + " file deployment";
 		logger.info(pluginTaskString + " starting...");
 
 		final HubServerConfigBuilder builder = new HubServerConfigBuilder();
