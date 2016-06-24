@@ -41,7 +41,6 @@ import org.apache.maven.project.MavenProject;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
 
-import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.hub.HubIntRestService;
 import com.blackducksoftware.integration.hub.HubSupportHelper;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
@@ -100,9 +99,8 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = "BlackDuck Software " + project.getName() + Constants.BDIO_FILE_SUFFIX
-				+ " file deployment";
-		getLog().info(pluginTaskString + " starting...");
+		final String pluginTaskString = "BlackDuck Software " + helper.getBDIOFileName(project) + " file generation";
+		logger.info(pluginTaskString + " starting...");
 
 		final HubServerConfigBuilder builder = new HubServerConfigBuilder();
 		builder.setHubUrl(hubUrl);

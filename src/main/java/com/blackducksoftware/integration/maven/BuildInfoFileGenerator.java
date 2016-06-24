@@ -47,7 +47,6 @@ import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNo
 
 import com.blackducksoftware.integration.build.bdio.BdioConverter;
 import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
-import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.build.bdio.Gav;
 import com.blackducksoftware.integration.maven.logging.MavenLogger;
 
@@ -75,9 +74,8 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		final String pluginTaskString = String.format("BlackDuck Software %s%s file generation", project.getName(),
-				Constants.BDIO_FILE_SUFFIX);
-		getLog().info(pluginTaskString + " starting...");
+		final String pluginTaskString = "BlackDuck Software " + helper.getBDIOFileName(project) + " file generation";
+		logger.info(pluginTaskString + " starting...");
 		final DependencyNode rootNode = getRootDependencyNode();
 		createBDIOFile(rootNode);
 		logger.info(pluginTaskString + " finished...");
