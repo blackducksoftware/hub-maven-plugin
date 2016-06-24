@@ -46,7 +46,6 @@ import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 
 import com.blackducksoftware.integration.build.bdio.BdioConverter;
-import com.blackducksoftware.integration.build.bdio.BdioIdCreator;
 import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
 import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.build.bdio.Gav;
@@ -106,21 +105,16 @@ public class BuildInfoFileGenerator extends AbstractMojo {
 			}
 
 			try {
-				final File pomFile = project.getFile();
-				getLog().info("Project File: " + pomFile.getCanonicalPath());
 				final Gav projectGav = new Gav(project.getGroupId(), project.getArtifactId(), project.getVersion());
-
 				final File file = new File(target, projectGav.getArtifactId() + Constants.BDIO_FILE_SUFFIX);
-
 				getLog().info(MSG_FILE_TO_GENERATE + file.getCanonicalPath());
 
 				try (final OutputStream outputStream = new FileOutputStream(file)) {
 					final com.blackducksoftware.integration.build.bdio.DependencyNode root = createCommonDependencyNode(
 							rootNode);
-					final BdioIdCreator mavenIdCreator = new BdioIdCreator();
-					final BdioConverter bdioConverter = new BdioConverter(mavenIdCreator);
+					final BdioConverter bdioConverter = new BdioConverter();
 					final CommonBomFormatter commonBomFormatter = new CommonBomFormatter(bdioConverter);
-					commonBomFormatter.writeProject(outputStream, project.getName(), pomFile.getCanonicalPath(), root);
+					commonBomFormatter.writeProject(outputStream, project.getName(), root);
 				}
 			} catch (final IOException e) {
 				throw new MojoExecutionException(EXCEPTION_MSG_FILE_NOT_CREATED, e);
