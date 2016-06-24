@@ -5,6 +5,29 @@ Goals:
 
 * createHubOutput - generates the file in the target folder during the packaging phase.
 * deployHubOutput - uploads the Black Duck I/O file up to the hub server.
+
+## Repository Configuration
+In the repositories portion of the POM file add the repositories for the plugin and the Black Duck I/O dependencies:
+```
+    <repository>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>bds-int-public</id>
+      <url>https://updates.suite.blackducksoftware.com/integrations/</url>
+    </repository>
+```
+```    
+    <repository>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>oss.jfrog.org</id>
+      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
+    </repository>
+```
+## Plugin Configuration ##
+In the plugins portion of the POM file add the following hub-maven-plugin configuration:
 ```
     <build>
        <plugins>
