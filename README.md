@@ -10,9 +10,8 @@ Goals:
 In the repositories portion of the POM file add the repositories for the plugin and the [Black Duck I/O](https://github.com/blackducksoftware/bdio) dependencies:
 ```
     <repository>
-        <id>suiterepo.blackducksoftware.com</id>
-        <name>suiterepo.blackducksoftware.com-releases</name>
-        <url>http://suiterepo.blackducksoftware.com:8181/artifactory/bds-integrations/</url>
+        <id>bds-int-public</id>
+        <url>https://updates.suite.blackducksoftware.com/integrations/</url>
     </repository>
 ```
 ## Plugin Configuration ##

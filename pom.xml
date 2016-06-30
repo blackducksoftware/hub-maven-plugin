@@ -18,9 +18,8 @@
       <snapshots>
         <updatePolicy>always</updatePolicy>
       </snapshots>
-      <id>suiterepo.blackducksoftware.com</id>
-      <name>suiterepo.blackducksoftware.com-releases</name>
-      <url>http://suiterepo.blackducksoftware.com:8181/artifactory/bds-integrations/</url>
+      <id>bds-int-public</id>
+      <url>https://updates.suite.blackducksoftware.com/integrations/</url>
     </repository>
   </repositories>
 
