@@ -7,6 +7,7 @@ Goals:
 * deployHubOutput - uploads the file to the hub server  (Supported in a future version of both the HUB and this Maven plugin)
 
 In order to use this plugin you need to perform the following:
+
 1. Update the settings.xml file to contain the HUB server configuration information in the active profile used.
 2. Update the pom.xml file of the project to utilize the Maven plugin to generate the output file.
 3. Build your Maven project.  Ensure the package phase of the build is executed.
