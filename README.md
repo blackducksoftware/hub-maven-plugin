@@ -74,13 +74,20 @@ In the plugins portion of the POM file add the hub-maven-plugin configuration.  
                <version>1.0.1</version>
                <executions>
                    <execution>
+                       <id>create-bdio-file</id>
                        <phase>package</phase>
                        <goals>
                            <goal>createHubOutput</goal>
+                       </goals>
+                   </execution>
+                   <execution>
+                       <id>deploy-bdio-file</id>
+                       <phase>deploy</phase>
+                       <goals>
                            <goal>deployHubOutput</goal>
                        </goals>
                    </execution>
-                </executions>
+               </executions>
             </plugin>
         </plugins>
     </build>
