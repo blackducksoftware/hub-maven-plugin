@@ -4,7 +4,7 @@ This plugin provides ability to generate a [Black Duck I/O](https://github.com/b
 Goals:
 
 * createHubOutput - generates the [Black Duck I/O](https://github.com/blackducksoftware/bdio) file
-* deployHubOutput - uploads the file to the hub server  (Supported in a future version of both the HUB and this maven plugin)
+* deployHubOutput - uploads the file to the hub server  (Supported in a future version of both the HUB and this Maven plugin)
 
 In order to use this plugin you need to perform the following:
 1. Update the settings.xml file to contain the HUB server configuration information in the active profile used.
@@ -16,7 +16,7 @@ In order to use this plugin you need to perform the following:
 [![Coverage Status](https://coveralls.io/repos/github/blackducksoftware/hub-maven-plugin/badge.svg?branch=master)](https://coveralls.io/github/blackducksoftware/hub-maven-plugin?branch=master)
 
 ## Where can I get the latest release? ##
-You can download the latest source from the Maven Central repository: http://search.maven.org/. 
+You can download the latest release from the Maven Central repository: http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22hub-maven-plugin%22
 
 ## Settings.xml Configuration ##
 Your settings.xml file used with Maven will need be updated in order to provide the plugin with the connection information for the HUB.
@@ -52,7 +52,7 @@ You can create a profile that contains only these properties in your settings.xm
     </properties>
 </profile>
 ```
-If you do create a profile to only contain the HUB configuration data then make sure that the profile is active in order for the properties to be available to the plugin during the build of the project.
+If you do create a profile to only contain the HUB configuration data, then make sure that the profile is active in order for the properties to be available to the plugin during the build of the project.
 
 You can include the profile to the list of active profiles by editing the activeProfiles element in the XML file.
 ```
@@ -70,7 +70,7 @@ In the plugins portion of the POM file add the hub-maven-plugin configuration.  
            <plugin>
                <groupId>com.blackducksoftware.integration</groupId>
                <artifactId>hub-maven-plugin</artifactId>
-               <version>1.0.0</version>
+               <version>1.0.1</version>
                <executions>
                    <execution>
                        <phase>package</phase>
@@ -85,10 +85,16 @@ In the plugins portion of the POM file add the hub-maven-plugin configuration.  
     </build>
 ```
 
-## Maven Command Line ## 
-If you configure the settings.xml and POM file for the project as shown in the examples above there is nothing additional needed, the plugin will be invoked.  Simply make sure the package phase occurs.  An example of the Maven command is shown below.
+## Maven Command Line ##
+If you configure the settings.xml and POM file for the project as shown in the examples above there is nothing additional needed, the plugin will be invoked.  Simply make sure the package phase occurs.  Examples of the Maven commands that invoke the plugin are shown below.
 ```
-mvn clean package
+mvn package
+```
+```
+mvn install
+```
+```
+mvn deploy
 ```
 
 ## License ##
