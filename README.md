@@ -64,7 +64,41 @@ You can include the profile to the list of active profiles by editing the active
 This would apply this profile any time Maven is executed.  If this is not the desired behavior please read the Maven documentation on profiles and configure your environment accordingly.
 
 ## POM File Configuration ##
-In the plugins portion of the POM file add the hub-maven-plugin configuration.  This is shown below
+This section provides examples on how to invoke the plugin.
+
+### Configure Plugin in the POM File ###
+In the plugins portion of the POM file add the hub-maven-plugin configuration.  This is shown below:
+```
+    <build>
+       <plugins>
+           <plugin>
+               <groupId>com.blackducksoftware.integration</groupId>
+               <artifactId>hub-maven-plugin</artifactId>
+               <version>1.0.1</version>
+            </plugin>
+        </plugins>
+    </build>
+```
+
+* Command to Create Output File to HUB
+
+```
+mvn hub:createHubOutput
+```
+* Command to Deploy Output File to HUB
+
+```
+hub:deployHubOutput
+```
+
+* Command to Create and Deploy Output File to HUB
+
+```
+mvn hub:createHubOutput hub:deployHubOutput
+```
+
+### Configure Execution in POM File  ###
+To configure the goals to execute in the POM file rather than by command line arguments add execution elements.  This is shown below:
 ```
     <build>
        <plugins>
@@ -93,14 +127,39 @@ In the plugins portion of the POM file add the hub-maven-plugin configuration.  
     </build>
 ```
 
-## Maven Command Line ##
-If you configure the settings.xml and POM file for the project as shown in the examples above there is nothing additional needed, the plugin will be invoked.  Simply make sure the package phase occurs.  Examples of the Maven commands that invoke the plugin are shown below.
+When you execute the Maven package phase the output file will be created as defined by this execution:
+```
+<execution>
+   <id>create-bdio-file</id>
+   <phase>package</phase>
+   <goals>
+       <goal>createHubOutput</goal>
+   </goals>
+</execution>
+```
+
+* Commands to Create Output File to HUB
+
 ```
 mvn package
 ```
 ```
 mvn install
 ```
+
+When you deploy your project's artifacts it will also send the output file to the configured HUB server as defined by this execution: 
+```
+<execution>
+    <id>deploy-bdio-file</id>
+    <phase>deploy</phase>
+    <goals>
+        <goal>deployHubOutput</goal>
+    </goals>
+</execution>
+```
+
+* Commands to Deploy Output File to HUB
+
 ```
 mvn deploy
 ```
