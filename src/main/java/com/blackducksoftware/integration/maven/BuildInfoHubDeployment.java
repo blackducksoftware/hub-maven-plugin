@@ -41,12 +41,9 @@ import org.apache.maven.project.MavenProject;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
 
-import com.blackducksoftware.integration.hub.HubIntRestService;
-import com.blackducksoftware.integration.hub.HubSupportHelper;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.builder.ValidationResultEnum;
 import com.blackducksoftware.integration.hub.builder.ValidationResults;
-import com.blackducksoftware.integration.hub.capabilities.HubCapabilitiesEnum;
 import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.EncryptionException;
 import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
@@ -142,20 +139,16 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 		connection.setCookies(config.getGlobalCredentials().getUsername(),
 				config.getGlobalCredentials().getDecryptedPassword());
 
-		if (isUploadSupported(connection)) {
-			final List<String> urlSegments = new ArrayList<>();
-			urlSegments.add("api");
-			urlSegments.add("v1");
-			urlSegments.add("bom-import");
-			final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
-			final File file = new File(target, helper.getBDIOFileName(project));
-			final FileRepresentation content = new FileRepresentation(file, MediaType.APPLICATION_JSON);
-			final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
+		final List<String> urlSegments = new ArrayList<>();
+		urlSegments.add("api");
+		urlSegments.add("v1");
+		urlSegments.add("bom-import");
+		final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
+		final File file = new File(target, helper.getBDIOFileName(project));
+		final FileRepresentation content = new FileRepresentation(file, MediaType.APPLICATION_JSON);
+		final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
 
-			logger.info("Uploaded the file: " + file + " to " + location);
-		} else {
-			logger.error("The hub server does not support file deployment of " + helper.getBDIOFileName(project));
-		}
+		logger.info("Uploaded the file: " + file + " to " + location);
 	}
 
 	private void logErrors(final ValidationResults<GlobalFieldKey, HubServerConfig> results) {
@@ -173,12 +166,4 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 			}
 		}
 	}
-
-	private boolean isUploadSupported(final RestConnection restConnection) throws URISyntaxException, IOException {
-		final HubIntRestService service = new HubIntRestService(restConnection);
-		final HubSupportHelper hubSupport = new HubSupportHelper();
-		hubSupport.checkHubSupport(service, logger);
-		return hubSupport.hasCapability(HubCapabilitiesEnum.BOM_FILE_UPLOAD);
-	}
-
 }
