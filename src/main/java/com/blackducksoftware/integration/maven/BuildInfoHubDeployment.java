@@ -145,7 +145,7 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 		urlSegments.add("bom-import");
 		final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
 		final File file = new File(target, helper.getBDIOFileName(project));
-		final FileRepresentation content = new FileRepresentation(file, MediaType.MULTIPART_FORM_DATA);
+		final FileRepresentation content = new FileRepresentation(file, new MediaType("application/ld+json"));
 		final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
 
 		logger.info("Uploaded the file: " + file + " to " + location);
