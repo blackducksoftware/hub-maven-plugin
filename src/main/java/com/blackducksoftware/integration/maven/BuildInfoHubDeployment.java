@@ -41,6 +41,7 @@ import org.apache.maven.project.MavenProject;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
 
+import com.blackducksoftware.integration.build.bdio.Constants;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.builder.ValidationResultEnum;
 import com.blackducksoftware.integration.hub.builder.ValidationResults;
@@ -145,10 +146,10 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 		urlSegments.add("bom-import");
 		final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
 		final File file = new File(target, helper.getBDIOFileName(project));
-		final FileRepresentation content = new FileRepresentation(file, new MediaType("application/ld+json"));
+		final FileRepresentation content = new FileRepresentation(file, new MediaType(Constants.BDIO_FILE_MEDIA_TYPE));
 		final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
 
-		logger.info("Uploaded the file: " + file + " to " + location);
+		logger.info("Uploaded the file: " + file + " to " + config.getHubUrl().toString());
 	}
 
 	private void logErrors(final ValidationResults<GlobalFieldKey, HubServerConfig> results) {
