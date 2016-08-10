@@ -20,4 +20,4 @@ In order to use this plugin you need to perform the following:
 You can download the latest release from the Maven Central repository: http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22hub-maven-plugin%22
 
 ## License ##
-Apache License 2.0
+Apache License 2.0 
