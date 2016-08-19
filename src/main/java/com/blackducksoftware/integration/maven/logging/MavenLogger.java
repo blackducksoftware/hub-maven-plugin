@@ -26,7 +26,7 @@ import org.apache.maven.plugin.logging.Log;
 import com.blackducksoftware.integration.hub.logging.IntLogger;
 import com.blackducksoftware.integration.hub.logging.LogLevel;
 
-public class MavenLogger implements IntLogger {
+public class MavenLogger extends IntLogger {
 
 	private final Log log;
 
