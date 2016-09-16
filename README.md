@@ -1,17 +1,6 @@
 ## Overview ##
 This plugin provides ability to generate a [Black Duck I/O](https://github.com/blackducksoftware/bdio) formatted file containing the dependency information gathered from the Maven project. The file is generated in the target folder of the project. This plugin also has the ability to upload the [Black Duck I/O](https://github.com/blackducksoftware/bdio) file up to the hub to create a code location in the hub. In order to generate the file and upload the contents to the hub the Maven pom file must have a section for this plugin and execute goals specific to this plugin.  A developer or release engineer will have to update the projects pom.xml file(s) to utilize this Maven plugin.  You must be familiar with Maven, POM files, Maven settings, and Maven profiles to use this plugin.
 
-Goals:
-
-* createHubOutput - generates the [Black Duck I/O](https://github.com/blackducksoftware/bdio) file
-* deployHubOutput - uploads the file to the hub server  (Supported in a future version of both the HUB and this Maven plugin)
-
-In order to use this plugin you need to perform the following:
-
-1. Update the settings.xml file to contain the HUB server configuration information in the active profile used.
-2. Update the pom.xml file of the project to utilize the Maven plugin to generate the output file.
-3. Build your Maven project.  Ensure the package phase of the build is executed.
-
 ## Documentation ##
 
 Please see wiki: https://github.com/blackducksoftware/hub-maven-plugin/wiki
