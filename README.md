@@ -12,6 +12,10 @@ In order to use this plugin you need to perform the following:
 2. Update the pom.xml file of the project to utilize the Maven plugin to generate the output file.
 3. Build your Maven project.  Ensure the package phase of the build is executed.
 
+## Documentation ##
+
+Please see wiki: https://github.com/blackducksoftware/hub-maven-plugin/wiki
+
 ## Build ##
 [![Build Status](https://travis-ci.org/blackducksoftware/hub-maven-plugin.svg?branch=master)](https://travis-ci.org/blackducksoftware/hub-maven-plugin)
 [![Coverage Status](https://coveralls.io/repos/github/blackducksoftware/hub-maven-plugin/badge.svg?branch=master)](https://coveralls.io/github/blackducksoftware/hub-maven-plugin?branch=master)
