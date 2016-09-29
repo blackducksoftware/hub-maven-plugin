@@ -92,6 +92,9 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 	@Parameter(defaultValue = PluginConstants.PARAM_HUB_PROXY_PASSWORD, readonly = true)
 	private String hubProxyPassword;
 
+	@Parameter(defaultValue = PluginConstants.PARAM_IGNORE_FAILURE, readonly = true)
+	private Boolean ignoreFailure;
+
 	private final MavenLogger logger = new MavenLogger(getLog());
 	private final PluginHelper helper = new PluginHelper();
 
@@ -115,14 +118,22 @@ public class BuildInfoHubDeployment extends AbstractMojo {
 
 		if (results.isSuccess()) {
 			try {
-				final HubServerConfig config = results.getConstructedObject();
-				uploadFileToHub(config);
-			} catch (final URISyntaxException e) {
-				throw new MojoExecutionException("Hub URI invalid", e);
-			} catch (final IllegalArgumentException | BDRestException | EncryptionException | IOException e) {
-				throw new MojoExecutionException("Cannot communicate with hub server.", e);
-			} catch (final ResourceDoesNotExistException e) {
-				throw new MojoExecutionException("Cannot upload the file to the hub server.", e);
+				try {
+					final HubServerConfig config = results.getConstructedObject();
+					uploadFileToHub(config);
+				} catch (final URISyntaxException e) {
+					throw new MojoExecutionException("Hub URI invalid", e);
+				} catch (final IllegalArgumentException | BDRestException | EncryptionException | IOException e) {
+					throw new MojoExecutionException("Cannot communicate with hub server.", e);
+				} catch (final ResourceDoesNotExistException e) {
+					throw new MojoExecutionException("Cannot upload the file to the hub server.", e);
+				}
+			} catch (final Exception e) {
+				if (!ignoreFailure) {
+					throw e;
+				} else {
+					logger.warn("Ignoring failure: " + e.getMessage());
+				}
 			}
 		} else {
 			logErrors(results);
