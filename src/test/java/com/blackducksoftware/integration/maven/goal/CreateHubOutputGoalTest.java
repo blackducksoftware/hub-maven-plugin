@@ -19,14 +19,16 @@
  * specific language governing permissions and limitations
  * under the License.
  *******************************************************************************/
-package com.blackducksoftware.integration.maven;
+package com.blackducksoftware.integration.maven.goal;
 
 import org.junit.Test;
 
-public class BuildInfoFileGeneratorTest {
+import com.blackducksoftware.integration.maven.goal.CreateHubOutputGoal;
 
+public class CreateHubOutputGoalTest {
 	@Test
 	public void testConstructor() {
-		new BuildInfoFileGenerator();
+		new CreateHubOutputGoal();
 	}
+
 }

@@ -22,6 +22,15 @@
 package com.blackducksoftware.integration.maven;
 
 public class PluginConstants {
+	public static final String GOAL_CREATE_FLAT_DEPENDENCY_LIST = "createFlatDependencyList";
+	public static final String GOAL_CREATE_HUB_OUTPUT = "createHubOutput";
+	public static final String GOAL_DEPLOY_HUB_OUTPUT = "deployHubOutput";
+	public static final String GOAL_CHECK_POLICIES = "checkPolicies";
+	public static final String GOAL_DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES = "deployHubOutputAndCheckPolicies";
+
+	public static final String MSG_FILE_TO_GENERATE = "File to generate: ";
+	public static final String EXCEPTION_MSG_FILE_NOT_CREATED = "Could not generate bdio file";
+
 	public static final String DIRECTORY_TARGET = "target";
 
 	public static final String PARAM_PROJECT = "${project}";
