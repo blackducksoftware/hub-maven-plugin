@@ -21,147 +21,97 @@
  *******************************************************************************/
 package com.blackducksoftware.integration.maven;
 
-import static com.blackducksoftware.integration.maven.PluginConstants.EXCEPTION_MSG_FILE_NOT_CREATED;
-import static com.blackducksoftware.integration.maven.PluginConstants.MSG_FILE_TO_GENERATE;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.restlet.data.MediaType;
-import org.restlet.representation.FileRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.blackducksoftware.integration.build.bdio.BdioConverter;
-import com.blackducksoftware.integration.build.bdio.CommonBomFormatter;
-import com.blackducksoftware.integration.build.bdio.Constants;
-import com.blackducksoftware.integration.build.bdio.DependencyNode;
-import com.blackducksoftware.integration.builder.ValidationResultEnum;
-import com.blackducksoftware.integration.builder.ValidationResults;
-import com.blackducksoftware.integration.exception.EncryptionException;
-import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
+import com.blackducksoftware.integration.build.Constants;
+import com.blackducksoftware.integration.build.DependencyNode;
+import com.blackducksoftware.integration.build.utils.BdioDependencyWriter;
+import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
+import com.blackducksoftware.integration.hub.api.bom.BomImportRestService;
+import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
+import com.blackducksoftware.integration.hub.dataservices.DataServicesFactory;
+import com.blackducksoftware.integration.hub.dataservices.policystatus.PolicyStatusDataService;
+import com.blackducksoftware.integration.hub.dataservices.scan.ScanStatusDataService;
 import com.blackducksoftware.integration.hub.exception.BDRestException;
+import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
+import com.blackducksoftware.integration.hub.exception.MissingUUIDException;
+import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
 import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
-import com.blackducksoftware.integration.hub.global.GlobalFieldKey;
-import com.blackducksoftware.integration.hub.global.HubProxyInfo;
-import com.blackducksoftware.integration.hub.global.HubServerConfig;
+import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseException;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
 import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
 public class PluginHelper {
 	private final Logger logger = LoggerFactory.getLogger(PluginHelper.class);
 
-	public String getBDIOFileName(final MavenProject project) {
-		return project.getArtifactId() + Constants.BDIO_FILE_SUFFIX;
-	}
-
-	public void createHubOutput(final MavenProject project, final MavenSession session, final File target,
-			final DependencyGraphBuilder dependencyGraphBuilder) throws MojoExecutionException {
-		logger.info("projects...");
+	public void createHubOutput(final MavenProject project, final MavenSession session,
+			final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory, final String filename,
+			final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
 		final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(dependencyGraphBuilder,
 				session);
-		final String pluginTaskString = "BlackDuck Software " + getBDIOFileName(project) + " file generation";
-		logger.info(pluginTaskString + " starting...");
-		final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(project);
-		for (final MavenProject moduleProject : project.getCollectedProjects()) {
-			final DependencyNode moduleRootNode = mavenDependencyExtractor.getRootDependencyNode(moduleProject);
-			rootNode.getChildren().addAll(moduleRootNode.getChildren());
-		}
+		final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(project, hubProjectName,
+				hubProjectVersion);
 
-		createBDIOFile(project, target, rootNode);
-		logger.info("..." + pluginTaskString + " finished");
+		final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
+		bdioDependencyWriter.write(outputDirectory, filename, hubProjectName, rootNode);
 	}
 
-	private void createBDIOFile(final MavenProject project, final File target, final DependencyNode rootDependencyNode)
-			throws MojoExecutionException {
+	public void createFlatOutput(final MavenProject project, final MavenSession session,
+			final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory, final String filename,
+			final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
+		final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(dependencyGraphBuilder,
+				session);
+		final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(project, hubProjectName,
+				hubProjectVersion);
+
+		final FlatDependencyListWriter flatDependencyListWriter = new FlatDependencyListWriter();
+		flatDependencyListWriter.write(outputDirectory, filename, rootNode);
+	}
+
+	public void deployHubOutput(final Slf4jIntLogger logger, final RestConnection restConnection,
+			final File outputDirectory, final String filename)
+			throws IOException, ResourceDoesNotExistException, URISyntaxException, BDRestException {
+		final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
+		final BomImportRestService bomImportRestService = dataServicesFactory.getBomImportRestService();
+
+		final File file = new File(outputDirectory, filename);
+		bomImportRestService.importBomFile(file, Constants.BDIO_FILE_MEDIA_TYPE);
+
+		logger.info(String.format("Uploaded the file %s to %s", file, restConnection.getBaseUrl()));
+	}
+
+	public void waitForHub(final RestConnection restConnection, final String hubProjectName,
+			final String hubProjectVersion, final long scanStartedTimeout, final long scanFinishedTimeout) {
 		try {
-			// if the directory doesn't exist yet, let's create it
-			target.mkdirs();
-
-			final File file = new File(target, getBDIOFileName(project));
-			logger.info(MSG_FILE_TO_GENERATE + file.getCanonicalPath());
-
-			try (final OutputStream outputStream = new FileOutputStream(file)) {
-				final BdioConverter bdioConverter = new BdioConverter();
-				final CommonBomFormatter commonBomFormatter = new CommonBomFormatter(bdioConverter);
-				commonBomFormatter.writeProject(outputStream, project.getName(), rootDependencyNode);
-			}
-		} catch (final IOException e) {
-			throw new MojoExecutionException(EXCEPTION_MSG_FILE_NOT_CREATED, e);
+			final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
+			final ScanStatusDataService scanStatusDataService = dataServicesFactory.createScanStatusDataService();
+			scanStatusDataService.assertBomImportScanStartedThenFinished(hubProjectName, hubProjectVersion,
+					scanStartedTimeout * 1000, scanFinishedTimeout * 1000, new Slf4jIntLogger(logger));
+		} catch (IOException | BDRestException | URISyntaxException | ProjectDoesNotExistException
+				| UnexpectedHubResponseException | HubIntegrationException | InterruptedException e) {
+			logger.error(String.format("There was an error waiting for the scans: %s", e.getMessage()), e);
 		}
 	}
 
-	public void uploadFileToHub(final Slf4jIntLogger logger, final HubServerConfigBuilder hubServerConfigBuilder,
-			final MavenProject project, final File target) throws MojoExecutionException, MojoFailureException {
-		final ValidationResults<GlobalFieldKey, HubServerConfig> results = hubServerConfigBuilder.buildResults();
+	public PolicyStatusItem checkPolicies(final RestConnection restConnection, final String hubProjectName,
+			final String hubProjectVersion) throws MojoFailureException, IOException, URISyntaxException,
+			BDRestException, ProjectDoesNotExistException, HubIntegrationException, MissingUUIDException {
+		final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
+		final PolicyStatusDataService policyStatusDataService = dataServicesFactory.createPolicyStatusDataService();
 
-		if (results.isSuccess()) {
-			try {
-				final HubServerConfig hubServerConfig = results.getConstructedObject();
-				uploadFileToHub(logger, hubServerConfig, project, target);
-			} catch (final URISyntaxException e) {
-				throw new MojoExecutionException("Hub URI invalid", e);
-			} catch (final IllegalArgumentException | BDRestException | EncryptionException | IOException e) {
-				throw new MojoExecutionException("Cannot communicate with hub server.", e);
-			} catch (final ResourceDoesNotExistException e) {
-				throw new MojoExecutionException("Cannot upload the file to the hub server.", e);
-			}
-		} else {
-			logErrors(logger, results);
-		}
-	}
-
-	private void uploadFileToHub(final Slf4jIntLogger logger, final HubServerConfig config, final MavenProject project,
-			final File target) throws URISyntaxException, IllegalArgumentException, BDRestException,
-			EncryptionException, IOException, ResourceDoesNotExistException {
-		final RestConnection connection = new RestConnection(config.getHubUrl().toString());
-		final HubProxyInfo proxyInfo = config.getProxyInfo();
-		if (proxyInfo.shouldUseProxyForUrl(config.getHubUrl())) {
-			connection.setProxyProperties(proxyInfo);
-		}
-		connection.setCookies(config.getGlobalCredentials().getUsername(),
-				config.getGlobalCredentials().getDecryptedPassword());
-
-		final List<String> urlSegments = new ArrayList<>();
-		urlSegments.add("api");
-		urlSegments.add("v1");
-		urlSegments.add("bom-import");
-		final Set<SimpleEntry<String, String>> queryParameters = new HashSet<>();
-		final File file = new File(target, getBDIOFileName(project));
-		final FileRepresentation content = new FileRepresentation(file, new MediaType(Constants.BDIO_FILE_MEDIA_TYPE));
-		final String location = connection.httpPostFromRelativeUrl(urlSegments, queryParameters, content);
-
-		logger.info("Uploaded the file: " + file + " to " + config.getHubUrl().toString());
-	}
-
-	private void logErrors(final Slf4jIntLogger logger,
-			final ValidationResults<GlobalFieldKey, HubServerConfig> results) {
-		logger.error("Invalid Hub Server Configuration skipping file deployment");
-		logger.error("Caused by: ");
-
-		final Set<GlobalFieldKey> keySet = results.getResultMap().keySet();
-
-		for (final GlobalFieldKey key : keySet) {
-			if (results.hasWarnings(key)) {
-				logger.warn(results.getResultString(key, ValidationResultEnum.WARN));
-			}
-			if (results.hasErrors(key)) {
-				logger.error(results.getResultString(key, ValidationResultEnum.ERROR));
-			}
-		}
+		final PolicyStatusItem policyStatusItem = policyStatusDataService
+				.getPolicyStatusForProjectAndVersion(hubProjectName, hubProjectVersion);
+		return policyStatusItem;
 	}
 
 }

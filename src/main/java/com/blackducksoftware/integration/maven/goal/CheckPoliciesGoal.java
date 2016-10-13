@@ -1,38 +1,45 @@
 package com.blackducksoftware.integration.maven.goal;
 
-import org.apache.maven.plugin.AbstractMojo;
+import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES;
+import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_ERROR;
+import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_FINISHED;
+import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_STARTING;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.blackducksoftware.integration.maven.PluginConstants;
-import com.blackducksoftware.integration.maven.PluginHelper;
+import com.blackducksoftware.integration.exception.EncryptionException;
+import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
+import com.blackducksoftware.integration.hub.exception.BDRestException;
+import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
+import com.blackducksoftware.integration.hub.exception.MissingUUIDException;
+import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
+import com.blackducksoftware.integration.hub.global.HubServerConfig;
+import com.blackducksoftware.integration.hub.rest.RestConnection;
 
-@Mojo(name = PluginConstants.GOAL_CHECK_POLICIES, defaultPhase = LifecyclePhase.PACKAGE)
-public class CheckPoliciesGoal extends AbstractMojo {
-	private final Logger logger = LoggerFactory.getLogger(CheckPoliciesGoal.class);
-
-	@Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
-	private MavenProject project;
-
-	@Component
-	private PluginHelper pluginHelper;
-
+@Mojo(name = CHECK_POLICIES, defaultPhase = LifecyclePhase.PACKAGE)
+public class CheckPoliciesGoal extends HubMojo {
 	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format("Black Duck Hub checking policies for: %s starting.",
-				pluginHelper.getBDIOFileName(project)));
+	public void performGoal() throws MojoExecutionException, MojoFailureException {
+		logger.info(String.format(CHECK_POLICIES_STARTING, getBdioFilename()));
 
-		// TODO add check policy
+		final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
+		try {
+			final RestConnection restConnection = new RestConnection(hubServerConfig);
+			final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
+					getHubVersion());
+			handlePolicyStatusItem(policyStatusItem);
+		} catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
+				| ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
+			throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
+		}
 
-		logger.info(String.format("Black Duck Hub checking policies for: %s finished.",
-				pluginHelper.getBDIOFileName(project)));
+		logger.info(String.format(CHECK_POLICIES_FINISHED, getBdioFilename()));
 	}
 
 }

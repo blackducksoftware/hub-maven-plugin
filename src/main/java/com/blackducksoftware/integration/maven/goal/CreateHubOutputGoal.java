@@ -21,53 +21,33 @@
  *******************************************************************************/
 package com.blackducksoftware.integration.maven.goal;
 
-import java.io.File;
+import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT;
+import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT_ERROR;
+import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT_FINISHED;
+import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT_STARTING;
 
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
+import java.io.IOException;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.blackducksoftware.integration.maven.PluginConstants;
-import com.blackducksoftware.integration.maven.PluginHelper;
-
-@Mojo(name = PluginConstants.GOAL_CREATE_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
-public class CreateHubOutputGoal extends AbstractMojo {
-	private final Logger logger = LoggerFactory.getLogger(CreateHubOutputGoal.class);
-
-	@Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
-	private MavenProject project;
-
-	@Parameter(defaultValue = PluginConstants.PARAM_SESSION, readonly = true, required = true)
-	private MavenSession session;
-
-	@Parameter(defaultValue = PluginConstants.PARAM_TARGET_DIR, readonly = true)
-	private File target;
-
-	@Component
-	private DependencyGraphBuilder dependencyGraphBuilder;
-
-	@Component
-	private PluginHelper pluginHelper;
-
+@Mojo(name = CREATE_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
+public class CreateHubOutputGoal extends HubMojo {
 	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format("Black Duck Hub creating output file for: %s starting.",
-				pluginHelper.getBDIOFileName(project)));
+	public void performGoal() throws MojoExecutionException, MojoFailureException {
+		logger.info(String.format(CREATE_HUB_OUTPUT_STARTING, getBdioFilename()));
 
-		pluginHelper.createHubOutput(project, session, target, dependencyGraphBuilder);
+		try {
+			PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
+					getBdioFilename(), getHubProject(), getHubVersion());
+		} catch (final IOException e) {
+			throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
+		}
 
-		logger.info(String.format("Black Duck Hub creating output file for: %s finished.",
-				pluginHelper.getBDIOFileName(project)));
+		logger.info(String.format(CREATE_HUB_OUTPUT_FINISHED, getBdioFilename()));
 	}
 
 }

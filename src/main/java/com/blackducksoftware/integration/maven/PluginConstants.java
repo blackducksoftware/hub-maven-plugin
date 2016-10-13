@@ -22,28 +22,8 @@
 package com.blackducksoftware.integration.maven;
 
 public class PluginConstants {
-	public static final String GOAL_CREATE_FLAT_DEPENDENCY_LIST = "createFlatDependencyList";
-	public static final String GOAL_CREATE_HUB_OUTPUT = "createHubOutput";
-	public static final String GOAL_DEPLOY_HUB_OUTPUT = "deployHubOutput";
-	public static final String GOAL_CHECK_POLICIES = "checkPolicies";
-	public static final String GOAL_DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES = "deployHubOutputAndCheckPolicies";
-
-	public static final String MSG_FILE_TO_GENERATE = "File to generate: ";
-	public static final String EXCEPTION_MSG_FILE_NOT_CREATED = "Could not generate bdio file";
-
-	public static final String DIRECTORY_TARGET = "target";
-
 	public static final String PARAM_PROJECT = "${project}";
 	public static final String PARAM_SESSION = "${session}";
-	public static final String PARAM_TARGET_DIR = "${project.build.directory}";
-	public static final String PARAM_HUB_URL = "${hub-url}";
-	public static final String PARAM_HUB_USER = "${hub-user}";
-	public static final String PARAM_HUB_PASSWORD = "${hub-password}";
-	public static final String PARAM_HUB_TIMEOUT = "${hub-timeout}";
-	public static final String PARAM_HUB_PROXY_HOST = "${hub-proxy-host}";
-	public static final String PARAM_HUB_PROXY_PORT = "${hub-proxy-port}";
-	public static final String PARAM_HUB_PROXY_NO_HOSTS = "${hub-proxy-no-hosts}";
-	public static final String PARAM_HUB_PROXY_USER = "${hub-proxy-user}";
-	public static final String PARAM_HUB_PROXY_PASSWORD = "${hub-proxy-password}";
+	public static final String PARAM_TARGET_DIR = "${project.build.directory}/blackduck";
 
 }
