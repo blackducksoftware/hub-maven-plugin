@@ -120,11 +120,11 @@ public abstract class HubMojo extends AbstractMojo {
 	}
 
 	public String getBdioFilename() {
-		return getHubProjectName() + Constants.BDIO_FILE_SUFFIX;
+		return getHubProject() + Constants.BDIO_FILE_SUFFIX;
 	}
 
 	public String getFlatFilename() {
-		return getHubProjectName() + Constants.FLAT_FILE_SUFFIX;
+		return getHubProject() + Constants.FLAT_FILE_SUFFIX;
 	}
 
 	public HubServerConfigBuilder getHubServerConfigBuilder() {
