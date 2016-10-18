@@ -47,31 +47,31 @@ import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputGoal extends HubMojo {
-	private final Logger logger = LoggerFactory.getLogger(DeployHubOutputGoal.class);
+    private final Logger logger = LoggerFactory.getLogger(DeployHubOutputGoal.class);
 
-	@Override
-	public void performGoal() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format(DEPLOY_HUB_OUTPUT_STARTING, getBdioFilename()));
+    @Override
+    public void performGoal() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(DEPLOY_HUB_OUTPUT_STARTING, getBdioFilename()));
 
-		try {
-			PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-					getBdioFilename(), getHubProject(), getHubVersion());
-		} catch (final IOException e) {
-			throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
-		}
+        try {
+            PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
+                    getBdioFilename(), getHubProject(), getHubVersion());
+        } catch (final IOException e) {
+            throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
 
-		final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
-		RestConnection restConnection;
-		try {
-			restConnection = new RestConnection(hubServerConfig);
-			PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
-					getBdioFilename());
-		} catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-				| ResourceDoesNotExistException e) {
-			throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
-		}
+        final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
+        RestConnection restConnection;
+        try {
+            restConnection = new RestConnection(hubServerConfig);
+            PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
+                    getBdioFilename());
+        } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
+                | ResourceDoesNotExistException e) {
+            throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
 
-		logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
-	}
+        logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
+    }
 
 }

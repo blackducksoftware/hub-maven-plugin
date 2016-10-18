@@ -26,9 +26,9 @@ import org.junit.Test;
 import com.blackducksoftware.integration.maven.goal.CreateHubOutputGoal;
 
 public class CreateHubOutputGoalTest {
-	@Test
-	public void testConstructor() {
-		new CreateHubOutputGoal();
-	}
+    @Test
+    public void testConstructor() {
+        new CreateHubOutputGoal();
+    }
 
 }

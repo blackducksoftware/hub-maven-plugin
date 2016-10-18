@@ -24,22 +24,22 @@ import com.blackducksoftware.integration.hub.rest.RestConnection;
 
 @Mojo(name = CHECK_POLICIES, defaultPhase = LifecyclePhase.PACKAGE)
 public class CheckPoliciesGoal extends HubMojo {
-	@Override
-	public void performGoal() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format(CHECK_POLICIES_STARTING, getBdioFilename()));
+    @Override
+    public void performGoal() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CHECK_POLICIES_STARTING, getBdioFilename()));
 
-		final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
-		try {
-			final RestConnection restConnection = new RestConnection(hubServerConfig);
-			final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
-					getHubVersion());
-			handlePolicyStatusItem(policyStatusItem);
-		} catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-				| ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
-			throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
-		}
+        final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
+        try {
+            final RestConnection restConnection = new RestConnection(hubServerConfig);
+            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
+                    getHubVersion());
+            handlePolicyStatusItem(policyStatusItem);
+        } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
+                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
+            throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
+        }
 
-		logger.info(String.format(CHECK_POLICIES_FINISHED, getBdioFilename()));
-	}
+        logger.info(String.format(CHECK_POLICIES_FINISHED, getBdioFilename()));
+    }
 
 }

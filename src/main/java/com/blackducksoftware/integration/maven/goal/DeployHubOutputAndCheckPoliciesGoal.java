@@ -51,62 +51,62 @@ import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
-	@Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
-	private int scanStartedTimeout;
+    @Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
+    private int scanStartedTimeout;
 
-	@Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
-	private int scanFinishedTimeout;
+    @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
+    private int scanFinishedTimeout;
 
-	@Override
-	public void performGoal() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_STARTING, getBdioFilename()));
+    @Override
+    public void performGoal() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_STARTING, getBdioFilename()));
 
-		try {
-			PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-					getBdioFilename(), getHubProject(), getHubVersion());
-		} catch (final IOException e) {
-			throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
-		}
+        try {
+            PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
+                    getBdioFilename(), getHubProject(), getHubVersion());
+        } catch (final IOException e) {
+            throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
 
-		final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
-		final RestConnection restConnection;
-		try {
-			restConnection = new RestConnection(hubServerConfig);
-			PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
-					getBdioFilename());
-		} catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-				| ResourceDoesNotExistException e) {
-			throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
-		}
+        final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
+        final RestConnection restConnection;
+        try {
+            restConnection = new RestConnection(hubServerConfig);
+            PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
+                    getBdioFilename());
+        } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
+                | ResourceDoesNotExistException e) {
+            throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
 
-		try {
-			PLUGIN_HELPER.waitForHub(restConnection, getHubProject(), getHubVersion(), scanStartedTimeout,
-					scanFinishedTimeout);
-			final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
-					getHubVersion());
-			handlePolicyStatusItem(policyStatusItem);
-		} catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException
-				| ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
-			throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
-		}
+        try {
+            PLUGIN_HELPER.waitForHub(restConnection, getHubProject(), getHubVersion(), scanStartedTimeout,
+                    scanFinishedTimeout);
+            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
+                    getHubVersion());
+            handlePolicyStatusItem(policyStatusItem);
+        } catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException
+                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
+            throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
+        }
 
-		logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_FINISHED, getBdioFilename()));
-	}
+        logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_FINISHED, getBdioFilename()));
+    }
 
-	public int getScanStartedTimeout() {
-		return scanStartedTimeout;
-	}
+    public int getScanStartedTimeout() {
+        return scanStartedTimeout;
+    }
 
-	public void setScanStartedTimeout(final int scanStartedTimeout) {
-		this.scanStartedTimeout = scanStartedTimeout;
-	}
+    public void setScanStartedTimeout(final int scanStartedTimeout) {
+        this.scanStartedTimeout = scanStartedTimeout;
+    }
 
-	public int getScanFinishedTimeout() {
-		return scanFinishedTimeout;
-	}
+    public int getScanFinishedTimeout() {
+        return scanFinishedTimeout;
+    }
 
-	public void setScanFinishedTimeout(final int scanFinishedTimeout) {
-		this.scanFinishedTimeout = scanFinishedTimeout;
-	}
+    public void setScanFinishedTimeout(final int scanFinishedTimeout) {
+        this.scanFinishedTimeout = scanFinishedTimeout;
+    }
 
 }

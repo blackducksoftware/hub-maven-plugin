@@ -36,18 +36,18 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 @Mojo(name = CREATE_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class CreateHubOutputGoal extends HubMojo {
-	@Override
-	public void performGoal() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format(CREATE_HUB_OUTPUT_STARTING, getBdioFilename()));
+    @Override
+    public void performGoal() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CREATE_HUB_OUTPUT_STARTING, getBdioFilename()));
 
-		try {
-			PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-					getBdioFilename(), getHubProject(), getHubVersion());
-		} catch (final IOException e) {
-			throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
-		}
+        try {
+            PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
+                    getBdioFilename(), getHubProject(), getHubVersion());
+        } catch (final IOException e) {
+            throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
 
-		logger.info(String.format(CREATE_HUB_OUTPUT_FINISHED, getBdioFilename()));
-	}
+        logger.info(String.format(CREATE_HUB_OUTPUT_FINISHED, getBdioFilename()));
+    }
 
 }

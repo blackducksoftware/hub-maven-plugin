@@ -22,8 +22,10 @@
 package com.blackducksoftware.integration.maven;
 
 public class PluginConstants {
-	public static final String PARAM_PROJECT = "${project}";
-	public static final String PARAM_SESSION = "${session}";
-	public static final String PARAM_TARGET_DIR = "${project.build.directory}/blackduck";
+    public static final String PARAM_PROJECT = "${project}";
+
+    public static final String PARAM_SESSION = "${session}";
+
+    public static final String PARAM_TARGET_DIR = "${project.build.directory}/blackduck";
 
 }

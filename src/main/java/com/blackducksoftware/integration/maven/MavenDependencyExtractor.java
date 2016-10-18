@@ -16,74 +16,75 @@ import com.blackducksoftware.integration.build.DependencyNode;
 import com.blackducksoftware.integration.build.Gav;
 
 public class MavenDependencyExtractor {
-	private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";
+    private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";
 
-	private final DependencyGraphBuilder dependencyGraphBuilder;
-	private final MavenSession session;
+    private final DependencyGraphBuilder dependencyGraphBuilder;
 
-	public MavenDependencyExtractor(final DependencyGraphBuilder dependencyGraphBuilder, final MavenSession session) {
-		this.dependencyGraphBuilder = dependencyGraphBuilder;
-		this.session = session;
-	}
+    private final MavenSession session;
 
-	public DependencyNode getRootDependencyNode(final MavenProject project, final String projectName,
-			final String versionName) throws MojoExecutionException {
-		org.apache.maven.shared.dependency.graph.DependencyNode rootNode = null;
-		final ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest(
-				session.getProjectBuildingRequest());
-		buildRequest.setProject(project);
-		buildRequest.setResolveDependencies(true);
+    public MavenDependencyExtractor(final DependencyGraphBuilder dependencyGraphBuilder, final MavenSession session) {
+        this.dependencyGraphBuilder = dependencyGraphBuilder;
+        this.session = session;
+    }
 
-		try {
-			rootNode = dependencyGraphBuilder.buildDependencyGraph(buildRequest, null);
-		} catch (final DependencyGraphBuilderException ex) {
-			throw new MojoExecutionException(EXCEPTION_MSG_NO_DEPENDENCY_GRAPH, ex);
-		}
+    public DependencyNode getRootDependencyNode(final MavenProject project, final String projectName,
+            final String versionName) throws MojoExecutionException {
+        org.apache.maven.shared.dependency.graph.DependencyNode rootNode = null;
+        final ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest(
+                session.getProjectBuildingRequest());
+        buildRequest.setProject(project);
+        buildRequest.setResolveDependencies(true);
 
-		final CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
-		rootNode.accept(visitor);
+        try {
+            rootNode = dependencyGraphBuilder.buildDependencyGraph(buildRequest, null);
+        } catch (final DependencyGraphBuilderException ex) {
+            throw new MojoExecutionException(EXCEPTION_MSG_NO_DEPENDENCY_GRAPH, ex);
+        }
 
-		final String groupId = project.getGroupId();
-		final String artifactId = projectName;
-		final String version = versionName;
-		final Gav projectGav = new Gav(groupId, artifactId, version);
+        final CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
+        rootNode.accept(visitor);
 
-		final List<DependencyNode> children = new ArrayList<>();
-		final DependencyNode root = new DependencyNode(projectGav, children);
-		for (final org.apache.maven.shared.dependency.graph.DependencyNode child : rootNode.getChildren()) {
-			children.add(createCommonDependencyNode(child));
-		}
+        final String groupId = project.getGroupId();
+        final String artifactId = projectName;
+        final String version = versionName;
+        final Gav projectGav = new Gav(groupId, artifactId, version);
 
-		for (final MavenProject moduleProject : project.getCollectedProjects()) {
-			final DependencyNode moduleRootNode = getRootDependencyNode(moduleProject, moduleProject.getArtifactId(),
-					moduleProject.getVersion());
-			children.addAll(moduleRootNode.getChildren());
-		}
+        final List<DependencyNode> children = new ArrayList<>();
+        final DependencyNode root = new DependencyNode(projectGav, children);
+        for (final org.apache.maven.shared.dependency.graph.DependencyNode child : rootNode.getChildren()) {
+            children.add(createCommonDependencyNode(child));
+        }
 
-		return root;
-	}
+        for (final MavenProject moduleProject : project.getCollectedProjects()) {
+            final DependencyNode moduleRootNode = getRootDependencyNode(moduleProject, moduleProject.getArtifactId(),
+                    moduleProject.getVersion());
+            children.addAll(moduleRootNode.getChildren());
+        }
 
-	private DependencyNode createCommonDependencyNode(
-			final org.apache.maven.shared.dependency.graph.DependencyNode mavenDependencyNode) {
-		final Gav gav = createGavFromDependencyNode(mavenDependencyNode);
-		final List<DependencyNode> children = new ArrayList<>();
-		final DependencyNode dependencyNode = new DependencyNode(gav, children);
+        return root;
+    }
 
-		for (final org.apache.maven.shared.dependency.graph.DependencyNode child : mavenDependencyNode.getChildren()) {
-			children.add(createCommonDependencyNode(child));
-		}
+    private DependencyNode createCommonDependencyNode(
+            final org.apache.maven.shared.dependency.graph.DependencyNode mavenDependencyNode) {
+        final Gav gav = createGavFromDependencyNode(mavenDependencyNode);
+        final List<DependencyNode> children = new ArrayList<>();
+        final DependencyNode dependencyNode = new DependencyNode(gav, children);
 
-		return dependencyNode;
-	}
+        for (final org.apache.maven.shared.dependency.graph.DependencyNode child : mavenDependencyNode.getChildren()) {
+            children.add(createCommonDependencyNode(child));
+        }
 
-	private Gav createGavFromDependencyNode(
-			final org.apache.maven.shared.dependency.graph.DependencyNode mavenDependencyNode) {
-		final String groupId = mavenDependencyNode.getArtifact().getGroupId();
-		final String artifactId = mavenDependencyNode.getArtifact().getArtifactId();
-		final String version = mavenDependencyNode.getArtifact().getVersion();
+        return dependencyNode;
+    }
 
-		final Gav gav = new Gav(groupId, artifactId, version);
-		return gav;
-	}
+    private Gav createGavFromDependencyNode(
+            final org.apache.maven.shared.dependency.graph.DependencyNode mavenDependencyNode) {
+        final String groupId = mavenDependencyNode.getArtifact().getGroupId();
+        final String artifactId = mavenDependencyNode.getArtifact().getArtifactId();
+        final String version = mavenDependencyNode.getArtifact().getVersion();
+
+        final Gav gav = new Gav(groupId, artifactId, version);
+        return gav;
+    }
 
 }

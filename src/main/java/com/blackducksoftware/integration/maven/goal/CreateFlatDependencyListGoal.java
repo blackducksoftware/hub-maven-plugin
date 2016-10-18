@@ -15,18 +15,18 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 @Mojo(name = CREATE_FLAT_DEPENDENCY_LIST, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class CreateFlatDependencyListGoal extends HubMojo {
-	@Override
-	public void performGoal() throws MojoExecutionException, MojoFailureException {
-		logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_STARTING, getFlatFilename()));
+    @Override
+    public void performGoal() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_STARTING, getFlatFilename()));
 
-		try {
-			PLUGIN_HELPER.createFlatOutput(getProject(), getSession(), getDependencyGraphBuilder(),
-					getOutputDirectory(), getFlatFilename(), getHubProject(), getHubVersion());
-		} catch (final IOException e) {
-			throw new MojoFailureException(String.format(CREATE_FLAT_DEPENDENCY_LIST_ERROR, e.getMessage()), e);
-		}
+        try {
+            PLUGIN_HELPER.createFlatOutput(getProject(), getSession(), getDependencyGraphBuilder(),
+                    getOutputDirectory(), getFlatFilename(), getHubProject(), getHubVersion());
+        } catch (final IOException e) {
+            throw new MojoFailureException(String.format(CREATE_FLAT_DEPENDENCY_LIST_ERROR, e.getMessage()), e);
+        }
 
-		logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_FINISHED, getFlatFilename()));
-	}
+        logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_FINISHED, getFlatFilename()));
+    }
 
 }
