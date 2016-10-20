@@ -45,7 +45,9 @@ import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
 import com.blackducksoftware.integration.hub.exception.MissingUUIDException;
 import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
 import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
+import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
+import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
 import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
@@ -63,7 +65,7 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
 
         try {
             PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-                    getBdioFilename(), getHubProject(), getHubVersion());
+                    getHubProjectName(), getHubVersionName());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
@@ -71,22 +73,22 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
         final RestConnection restConnection;
         try {
-            restConnection = new RestConnection(hubServerConfig);
+            restConnection = new CredentialsRestConnection(hubServerConfig);
             PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
-                    getBdioFilename());
+                    getHubProjectName());
         } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
                 | ResourceDoesNotExistException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
 
         try {
-            PLUGIN_HELPER.waitForHub(restConnection, getHubProject(), getHubVersion(), scanStartedTimeout,
+            PLUGIN_HELPER.waitForHub(restConnection, getHubProjectName(), getHubVersionName(), scanStartedTimeout,
                     scanFinishedTimeout);
-            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
-                    getHubVersion());
+            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProjectName(),
+                    getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
         } catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException
-                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
+                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException | UnexpectedHubResponseException e) {
             throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
         }
 

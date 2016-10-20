@@ -41,8 +41,8 @@ public class CreateHubOutputGoal extends HubMojo {
         logger.info(String.format(CREATE_HUB_OUTPUT_STARTING, getBdioFilename()));
 
         try {
-            PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-                    getBdioFilename(), getHubProject(), getHubVersion());
+            PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(), getHubProjectName(),
+                    getHubVersionName());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }

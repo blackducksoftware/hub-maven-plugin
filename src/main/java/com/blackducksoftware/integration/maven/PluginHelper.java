@@ -55,7 +55,7 @@ public class PluginHelper {
     private final Logger logger = LoggerFactory.getLogger(PluginHelper.class);
 
     public void createHubOutput(final MavenProject project, final MavenSession session,
-            final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory, final String filename,
+            final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
             final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
         final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(dependencyGraphBuilder,
                 session);
@@ -63,11 +63,11 @@ public class PluginHelper {
                 hubProjectVersion);
 
         final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
-        bdioDependencyWriter.write(outputDirectory, filename, hubProjectName, rootNode);
+        bdioDependencyWriter.write(outputDirectory, hubProjectName, rootNode);
     }
 
     public void createFlatOutput(final MavenProject project, final MavenSession session,
-            final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory, final String filename,
+            final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
             final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
         final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(dependencyGraphBuilder,
                 session);
@@ -75,15 +75,16 @@ public class PluginHelper {
                 hubProjectVersion);
 
         final FlatDependencyListWriter flatDependencyListWriter = new FlatDependencyListWriter();
-        flatDependencyListWriter.write(outputDirectory, filename, rootNode);
+        flatDependencyListWriter.write(outputDirectory, hubProjectName, rootNode);
     }
 
     public void deployHubOutput(final Slf4jIntLogger logger, final RestConnection restConnection,
-            final File outputDirectory, final String filename)
+            final File outputDirectory, final String hubProjectName)
             throws IOException, ResourceDoesNotExistException, URISyntaxException, BDRestException {
         final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
         final BomImportRestService bomImportRestService = dataServicesFactory.getBomImportRestService();
 
+        String filename = BdioDependencyWriter.getFilename(hubProjectName);
         final File file = new File(outputDirectory, filename);
         bomImportRestService.importBomFile(file, Constants.BDIO_FILE_MEDIA_TYPE);
 
@@ -105,7 +106,7 @@ public class PluginHelper {
 
     public PolicyStatusItem checkPolicies(final RestConnection restConnection, final String hubProjectName,
             final String hubProjectVersion) throws MojoFailureException, IOException, URISyntaxException,
-            BDRestException, ProjectDoesNotExistException, HubIntegrationException, MissingUUIDException {
+            BDRestException, ProjectDoesNotExistException, HubIntegrationException, MissingUUIDException, UnexpectedHubResponseException {
         final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
         final PolicyStatusDataService policyStatusDataService = dataServicesFactory.createPolicyStatusDataService();
 

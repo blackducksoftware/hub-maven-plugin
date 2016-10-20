@@ -19,7 +19,9 @@ import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
 import com.blackducksoftware.integration.hub.exception.MissingUUIDException;
 import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
+import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
+import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
 
 @Mojo(name = CHECK_POLICIES, defaultPhase = LifecyclePhase.PACKAGE)
@@ -30,12 +32,12 @@ public class CheckPoliciesGoal extends HubMojo {
 
         final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
         try {
-            final RestConnection restConnection = new RestConnection(hubServerConfig);
-            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProject(),
-                    getHubVersion());
+            final RestConnection restConnection = new CredentialsRestConnection(hubServerConfig);
+            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProjectName(),
+                    getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
         } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException e) {
+                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException | UnexpectedHubResponseException e) {
             throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
         }
 

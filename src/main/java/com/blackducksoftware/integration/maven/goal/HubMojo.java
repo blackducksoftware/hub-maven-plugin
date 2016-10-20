@@ -3,6 +3,7 @@ package com.blackducksoftware.integration.maven.goal;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -14,7 +15,8 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.blackducksoftware.integration.build.Constants;
+import com.blackducksoftware.integration.build.utils.BdioDependencyWriter;
+import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusEnum;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
@@ -82,7 +84,7 @@ public abstract class HubMojo extends AbstractMojo {
         try {
             performGoal();
         } catch (final MojoFailureException e) {
-            if (hubIgnoreFailure) {
+            if (isHubIgnoreFailure()) {
                 logger.warn(String.format(
                         "Your task has failed: %s. Build will NOT be failed due to hub.ignore.failure being true.",
                         e.getMessage()));
@@ -103,28 +105,12 @@ public abstract class HubMojo extends AbstractMojo {
         }
     }
 
-    public String getHubProject() {
-        if (StringUtils.isNotBlank(hubProjectName)) {
-            return hubProjectName;
-        }
-
-        return project.getArtifactId();
-    }
-
-    public String getHubVersion() {
-        if (StringUtils.isNotBlank(hubVersionName)) {
-            return hubVersionName;
-        }
-
-        return project.getVersion();
-    }
-
     public String getBdioFilename() {
-        return getHubProject() + Constants.BDIO_FILE_SUFFIX;
+        return BdioDependencyWriter.getFilename(getHubProjectName());
     }
 
     public String getFlatFilename() {
-        return getHubProject() + Constants.FLAT_FILE_SUFFIX;
+        return FlatDependencyListWriter.getFilename(getHubProjectName());
     }
 
     public HubServerConfigBuilder getHubServerConfigBuilder() {
@@ -140,6 +126,22 @@ public abstract class HubMojo extends AbstractMojo {
         hubServerConfigBuilder.setProxyPassword(getHubProxyPassword());
 
         return hubServerConfigBuilder;
+    }
+
+    public String getHubProjectName() {
+        if (StringUtils.isNotBlank(hubProjectName)) {
+            return hubProjectName;
+        }
+
+        return project.getArtifactId();
+    }
+
+    public String getHubVersionName() {
+        if (StringUtils.isNotBlank(hubVersionName)) {
+            return hubVersionName;
+        }
+
+        return project.getVersion();
     }
 
     public boolean isHubIgnoreFailure() {
@@ -158,16 +160,8 @@ public abstract class HubMojo extends AbstractMojo {
         this.outputDirectory = outputDirectory;
     }
 
-    public String getHubProjectName() {
-        return hubProjectName;
-    }
-
     public void setHubProjectName(final String hubProjectName) {
         this.hubProjectName = hubProjectName;
-    }
-
-    public String getHubVersionName() {
-        return hubVersionName;
     }
 
     public void setHubVersionName(final String hubVersionName) {
@@ -175,6 +169,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubUrl() {
+        if (StringUtils.isBlank(hubUrl)) {
+            return getDeprecatedProperty("hub-url");
+        }
         return hubUrl;
     }
 
@@ -183,6 +180,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubUsername() {
+        if (StringUtils.isBlank(hubUsername)) {
+            return getDeprecatedProperty("hub-user");
+        }
         return hubUsername;
     }
 
@@ -191,6 +191,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubPassword() {
+        if (StringUtils.isBlank(hubPassword)) {
+            return getDeprecatedProperty("hub-password");
+        }
         return hubPassword;
     }
 
@@ -199,6 +202,10 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public int getHubTimeout() {
+        String deprecatedProperty = getDeprecatedProperty("hub-timeout");
+        if (StringUtils.isNotBlank(deprecatedProperty)) {
+            return NumberUtils.toInt(deprecatedProperty);
+        }
         return hubTimeout;
     }
 
@@ -207,6 +214,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubProxyHost() {
+        if (StringUtils.isBlank(hubProxyHost)) {
+            return getDeprecatedProperty("hub-proxy-host");
+        }
         return hubProxyHost;
     }
 
@@ -215,6 +225,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubProxyPort() {
+        if (StringUtils.isBlank(hubProxyPort)) {
+            return getDeprecatedProperty("hub-proxy-port");
+        }
         return hubProxyPort;
     }
 
@@ -223,6 +236,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubNoProxyHosts() {
+        if (StringUtils.isBlank(hubNoProxyHosts)) {
+            return getDeprecatedProperty("hub-proxy-no-hosts");
+        }
         return hubNoProxyHosts;
     }
 
@@ -231,6 +247,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubProxyUsername() {
+        if (StringUtils.isBlank(hubProxyUsername)) {
+            return getDeprecatedProperty("hub-proxy-user");
+        }
         return hubProxyUsername;
     }
 
@@ -239,6 +258,9 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getHubProxyPassword() {
+        if (StringUtils.isBlank(hubProxyPassword)) {
+            return getDeprecatedProperty("hub-proxy-password");
+        }
         return hubProxyPassword;
     }
 
@@ -256,6 +278,10 @@ public abstract class HubMojo extends AbstractMojo {
 
     public DependencyGraphBuilder getDependencyGraphBuilder() {
         return dependencyGraphBuilder;
+    }
+
+    private String getDeprecatedProperty(String key) {
+        return getProject().getProperties().getProperty(key);
     }
 
 }
