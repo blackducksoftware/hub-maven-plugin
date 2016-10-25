@@ -84,7 +84,7 @@ public class PluginHelper {
         final File file = new File(outputDirectory, filename);
         bomImportRestService.importBomFile(file, Constants.BDIO_FILE_MEDIA_TYPE);
 
-        logger.info(String.format("Uploaded the file %s to %s", file, restConnection.getBaseUrl()));
+        logger.info(String.format(Constants.UPLOAD_FILE_MESSAGE, file, restConnection.getBaseUrl()));
     }
 
     public void waitForHub(final RestConnection restConnection, final String hubProjectName,
@@ -96,7 +96,7 @@ public class PluginHelper {
                     scanStartedTimeout * 1000, scanFinishedTimeout * 1000, new Slf4jIntLogger(logger));
         } catch (IOException | BDRestException | URISyntaxException | ProjectDoesNotExistException | UnexpectedHubResponseException
                 | HubIntegrationException | InterruptedException e) {
-            logger.error(String.format("There was an error waiting for the scans: %s", e.getMessage()), e);
+            logger.error(String.format(Constants.SCAN_ERROR_MESSAGE, e.getMessage()), e);
         }
     }
 
