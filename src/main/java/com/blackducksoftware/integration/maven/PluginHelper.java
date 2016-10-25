@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.slf4j.Logger;
@@ -57,9 +56,8 @@ public class PluginHelper {
     public void createHubOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
             final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(dependencyGraphBuilder,
-                session);
-        final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(project, hubProjectName,
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor();
+        final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
                 hubProjectVersion);
 
         final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
@@ -69,9 +67,8 @@ public class PluginHelper {
     public void createFlatOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
             final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(dependencyGraphBuilder,
-                session);
-        final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(project, hubProjectName,
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor();
+        final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
                 hubProjectVersion);
 
         final FlatDependencyListWriter flatDependencyListWriter = new FlatDependencyListWriter();
@@ -79,8 +76,7 @@ public class PluginHelper {
     }
 
     public void deployHubOutput(final Slf4jIntLogger logger, final RestConnection restConnection,
-            final File outputDirectory, final String hubProjectName)
-            throws IOException, ResourceDoesNotExistException, URISyntaxException, BDRestException {
+            final File outputDirectory, final String hubProjectName) throws IOException, ResourceDoesNotExistException, URISyntaxException, BDRestException {
         final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
         final BomImportRestService bomImportRestService = dataServicesFactory.getBomImportRestService();
 
@@ -93,20 +89,20 @@ public class PluginHelper {
 
     public void waitForHub(final RestConnection restConnection, final String hubProjectName,
             final String hubProjectVersion, final long scanStartedTimeout, final long scanFinishedTimeout) {
+        final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
+        final ScanStatusDataService scanStatusDataService = dataServicesFactory.createScanStatusDataService();
         try {
-            final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
-            final ScanStatusDataService scanStatusDataService = dataServicesFactory.createScanStatusDataService();
             scanStatusDataService.assertBomImportScanStartedThenFinished(hubProjectName, hubProjectVersion,
                     scanStartedTimeout * 1000, scanFinishedTimeout * 1000, new Slf4jIntLogger(logger));
-        } catch (IOException | BDRestException | URISyntaxException | ProjectDoesNotExistException
-                | UnexpectedHubResponseException | HubIntegrationException | InterruptedException e) {
+        } catch (IOException | BDRestException | URISyntaxException | ProjectDoesNotExistException | UnexpectedHubResponseException
+                | HubIntegrationException | InterruptedException e) {
             logger.error(String.format("There was an error waiting for the scans: %s", e.getMessage()), e);
         }
     }
 
     public PolicyStatusItem checkPolicies(final RestConnection restConnection, final String hubProjectName,
-            final String hubProjectVersion) throws MojoFailureException, IOException, URISyntaxException,
-            BDRestException, ProjectDoesNotExistException, HubIntegrationException, MissingUUIDException, UnexpectedHubResponseException {
+            final String hubProjectVersion) throws IOException, URISyntaxException, BDRestException, ProjectDoesNotExistException, HubIntegrationException,
+            MissingUUIDException, UnexpectedHubResponseException {
         final DataServicesFactory dataServicesFactory = new DataServicesFactory(restConnection);
         final PolicyStatusDataService policyStatusDataService = dataServicesFactory.createPolicyStatusDataService();
 

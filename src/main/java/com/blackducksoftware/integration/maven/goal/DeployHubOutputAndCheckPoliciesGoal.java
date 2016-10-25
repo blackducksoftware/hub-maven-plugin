@@ -54,10 +54,10 @@ import com.blackducksoftware.integration.log.Slf4jIntLogger;
 @Mojo(name = DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
     @Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
-    private int scanStartedTimeout;
+    private int hubScanStartedTimeout;
 
     @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
-    private int scanFinishedTimeout;
+    private int hubScanFinishedTimeout;
 
     @Override
     public void performGoal() throws MojoExecutionException, MojoFailureException {
@@ -82,8 +82,8 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         }
 
         try {
-            PLUGIN_HELPER.waitForHub(restConnection, getHubProjectName(), getHubVersionName(), scanStartedTimeout,
-                    scanFinishedTimeout);
+            PLUGIN_HELPER.waitForHub(restConnection, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
+                    getHubScanFinishedTimeout());
             final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProjectName(),
                     getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
@@ -95,20 +95,20 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_FINISHED, getBdioFilename()));
     }
 
-    public int getScanStartedTimeout() {
-        return scanStartedTimeout;
+    public int getHubScanStartedTimeout() {
+        return hubScanStartedTimeout;
     }
 
-    public void setScanStartedTimeout(final int scanStartedTimeout) {
-        this.scanStartedTimeout = scanStartedTimeout;
+    public void setHubScanStartedTimeout(final int hubScanStartedTimeout) {
+        this.hubScanStartedTimeout = hubScanStartedTimeout;
     }
 
-    public int getScanFinishedTimeout() {
-        return scanFinishedTimeout;
+    public int getHubScanFinishedTimeout() {
+        return hubScanFinishedTimeout;
     }
 
-    public void setScanFinishedTimeout(final int scanFinishedTimeout) {
-        this.scanFinishedTimeout = scanFinishedTimeout;
+    public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
+        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
     }
 
 }

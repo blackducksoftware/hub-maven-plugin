@@ -10,7 +10,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
 
 import com.blackducksoftware.integration.build.DependencyNode;
 import com.blackducksoftware.integration.build.Gav;
@@ -18,16 +17,8 @@ import com.blackducksoftware.integration.build.Gav;
 public class MavenDependencyExtractor {
     private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";
 
-    private final DependencyGraphBuilder dependencyGraphBuilder;
-
-    private final MavenSession session;
-
-    public MavenDependencyExtractor(final DependencyGraphBuilder dependencyGraphBuilder, final MavenSession session) {
-        this.dependencyGraphBuilder = dependencyGraphBuilder;
-        this.session = session;
-    }
-
-    public DependencyNode getRootDependencyNode(final MavenProject project, final String projectName,
+    public DependencyNode getRootDependencyNode(DependencyGraphBuilder dependencyGraphBuilder, MavenSession session, final MavenProject project,
+            final String projectName,
             final String versionName) throws MojoExecutionException {
         org.apache.maven.shared.dependency.graph.DependencyNode rootNode = null;
         final ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest(
@@ -41,9 +32,6 @@ public class MavenDependencyExtractor {
             throw new MojoExecutionException(EXCEPTION_MSG_NO_DEPENDENCY_GRAPH, ex);
         }
 
-        final CollectingDependencyNodeVisitor visitor = new CollectingDependencyNodeVisitor();
-        rootNode.accept(visitor);
-
         final String groupId = project.getGroupId();
         final String artifactId = projectName;
         final String version = versionName;
@@ -56,7 +44,7 @@ public class MavenDependencyExtractor {
         }
 
         for (final MavenProject moduleProject : project.getCollectedProjects()) {
-            final DependencyNode moduleRootNode = getRootDependencyNode(moduleProject, moduleProject.getArtifactId(),
+            final DependencyNode moduleRootNode = getRootDependencyNode(dependencyGraphBuilder, session, moduleProject, moduleProject.getArtifactId(),
                     moduleProject.getVersion());
             children.addAll(moduleRootNode.getChildren());
         }
