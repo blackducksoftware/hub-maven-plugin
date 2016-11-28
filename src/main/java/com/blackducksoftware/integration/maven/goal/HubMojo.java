@@ -100,6 +100,12 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
     private File outputDirectory;
 
+    @Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
+    private int hubScanStartedTimeout;
+
+    @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
+    private int hubScanFinishedTimeout;
+
     @Component
     private DependencyGraphBuilder dependencyGraphBuilder;
 
@@ -298,6 +304,22 @@ public abstract class HubMojo extends AbstractMojo {
 
     public void setCreateHubReport(boolean createHubReport) {
         this.createHubReport = createHubReport;
+    }
+
+    public int getHubScanStartedTimeout() {
+        return hubScanStartedTimeout;
+    }
+
+    public void setHubScanStartedTimeout(final int hubScanStartedTimeout) {
+        this.hubScanStartedTimeout = hubScanStartedTimeout;
+    }
+
+    public int getHubScanFinishedTimeout() {
+        return hubScanFinishedTimeout;
+    }
+
+    public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
+        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
     }
 
     public MavenProject getProject() {

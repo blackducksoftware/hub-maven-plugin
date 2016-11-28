@@ -37,7 +37,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
@@ -55,11 +54,6 @@ import com.blackducksoftware.integration.hub.rest.RestConnection;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
-    @Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
-    private int hubScanStartedTimeout;
-
-    @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
-    private int hubScanFinishedTimeout;
 
     @Override
     public void performGoal() throws MojoExecutionException, MojoFailureException {
@@ -106,22 +100,6 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         }
 
         logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_FINISHED, getBdioFilename()));
-    }
-
-    public int getHubScanStartedTimeout() {
-        return hubScanStartedTimeout;
-    }
-
-    public void setHubScanStartedTimeout(final int hubScanStartedTimeout) {
-        this.hubScanStartedTimeout = hubScanStartedTimeout;
-    }
-
-    public int getHubScanFinishedTimeout() {
-        return hubScanFinishedTimeout;
-    }
-
-    public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
-        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
     }
 
 }

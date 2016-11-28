@@ -55,10 +55,6 @@ import com.blackducksoftware.integration.hub.rest.RestConnection;
 public class DeployHubOutputGoal extends HubMojo {
     private final Logger logger = LoggerFactory.getLogger(DeployHubOutputGoal.class);
 
-    private long hubScanStartedTimeout = 300;
-
-    private long hubScanFinishedTimeout = 300;
-
     @Override
     public void performGoal() throws MojoExecutionException, MojoFailureException {
         logger.info(String.format(DEPLOY_HUB_OUTPUT_STARTING, getBdioFilename()));
@@ -94,22 +90,6 @@ public class DeployHubOutputGoal extends HubMojo {
         }
 
         logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
-    }
-
-    public long getHubScanStartedTimeout() {
-        return hubScanStartedTimeout;
-    }
-
-    public void setHubScanStartedTimeout(long hubScanStartedTimeout) {
-        this.hubScanStartedTimeout = hubScanStartedTimeout;
-    }
-
-    public long getHubScanFinishedTimeout() {
-        return hubScanFinishedTimeout;
-    }
-
-    public void setHubScanFinishedTimeout(long hubScanFinishedTimeout) {
-        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
     }
 
 }
