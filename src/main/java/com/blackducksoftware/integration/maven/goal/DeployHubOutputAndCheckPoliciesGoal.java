@@ -27,7 +27,9 @@ import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPU
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_FINISHED;
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_STARTING;
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_ERROR;
+import static com.blackducksoftware.integration.build.Constants.FAILED_TO_CREATE_REPORT;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -39,6 +41,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
+import com.blackducksoftware.integration.hub.api.HubServicesFactory;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
@@ -49,7 +52,6 @@ import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseExce
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
-import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
@@ -72,9 +74,11 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
 
         final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
         final RestConnection restConnection;
+        HubServicesFactory services;
         try {
             restConnection = new CredentialsRestConnection(hubServerConfig);
-            PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
+            services = new HubServicesFactory(restConnection);
+            PLUGIN_HELPER.deployHubOutput(services, getOutputDirectory(),
                     getHubProjectName());
         } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
                 | ResourceDoesNotExistException e) {
@@ -82,9 +86,18 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         }
 
         try {
-            PLUGIN_HELPER.waitForHub(restConnection, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
+            PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
                     getHubScanFinishedTimeout());
-            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(restConnection, getHubProjectName(),
+            if (getCreateHubReport()) {
+                File reportOutput = new File(getOutputDirectory(), "report");
+                try {
+                    PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
+                } catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException
+                        | ProjectDoesNotExistException | HubIntegrationException | InterruptedException | UnexpectedHubResponseException e) {
+                    throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
+                }
+            }
+            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(services, getHubProjectName(),
                     getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
         } catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException

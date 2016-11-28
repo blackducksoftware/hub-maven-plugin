@@ -61,9 +61,6 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.ignore.failure", defaultValue = "false")
     private boolean hubIgnoreFailure;
 
-    @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
-    private File outputDirectory;
-
     @Parameter(property = "hub.project.name")
     private String hubProjectName;
 
@@ -96,6 +93,12 @@ public abstract class HubMojo extends AbstractMojo {
 
     @Parameter(property = "hub.proxy.password")
     private String hubProxyPassword;
+
+    @Parameter(property = "hub.create.report", defaultValue = "true")
+    private boolean createHubReport;
+
+    @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
+    private File outputDirectory;
 
     @Component
     private DependencyGraphBuilder dependencyGraphBuilder;
@@ -287,6 +290,14 @@ public abstract class HubMojo extends AbstractMojo {
 
     public void setHubProxyPassword(final String hubProxyPassword) {
         this.hubProxyPassword = hubProxyPassword;
+    }
+
+    public boolean getCreateHubReport() {
+        return createHubReport;
+    }
+
+    public void setCreateHubReport(boolean createHubReport) {
+        this.createHubReport = createHubReport;
     }
 
     public MavenProject getProject() {

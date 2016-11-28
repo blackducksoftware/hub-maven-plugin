@@ -26,7 +26,9 @@ import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPU
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_ERROR;
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_FINISHED;
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_STARTING;
+import static com.blackducksoftware.integration.build.Constants.FAILED_TO_CREATE_REPORT;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -39,16 +41,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
+import com.blackducksoftware.integration.hub.api.HubServicesFactory;
 import com.blackducksoftware.integration.hub.exception.BDRestException;
+import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
+import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
 import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
+import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
-import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputGoal extends HubMojo {
     private final Logger logger = LoggerFactory.getLogger(DeployHubOutputGoal.class);
+
+    private long hubScanStartedTimeout = 300;
+
+    private long hubScanFinishedTimeout = 300;
 
     @Override
     public void performGoal() throws MojoExecutionException, MojoFailureException {
@@ -65,14 +74,42 @@ public class DeployHubOutputGoal extends HubMojo {
         RestConnection restConnection;
         try {
             restConnection = new CredentialsRestConnection(hubServerConfig);
-            PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
+            HubServicesFactory services = new HubServicesFactory(restConnection);
+            PLUGIN_HELPER.deployHubOutput(services, getOutputDirectory(),
                     getHubProjectName());
+            if (getCreateHubReport()) {
+                PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
+                        getHubScanFinishedTimeout());
+                File reportOutput = new File(getOutputDirectory(), "report");
+                try {
+                    PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
+                } catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException
+                        | ProjectDoesNotExistException | HubIntegrationException | InterruptedException | UnexpectedHubResponseException e) {
+                    throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
+                }
+            }
         } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
                 | ResourceDoesNotExistException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
 
         logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
+    }
+
+    public long getHubScanStartedTimeout() {
+        return hubScanStartedTimeout;
+    }
+
+    public void setHubScanStartedTimeout(long hubScanStartedTimeout) {
+        this.hubScanStartedTimeout = hubScanStartedTimeout;
+    }
+
+    public long getHubScanFinishedTimeout() {
+        return hubScanFinishedTimeout;
+    }
+
+    public void setHubScanFinishedTimeout(long hubScanFinishedTimeout) {
+        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
     }
 
 }
