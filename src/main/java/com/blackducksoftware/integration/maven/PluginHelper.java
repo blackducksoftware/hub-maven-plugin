@@ -63,17 +63,6 @@ import com.blackducksoftware.integration.log.Slf4jIntLogger;
 public class PluginHelper {
     private final Logger logger = LoggerFactory.getLogger(PluginHelper.class);
 
-    public void createHubOutput(final MavenProject project, final MavenSession session,
-            final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
-            final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor();
-        final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
-                hubProjectVersion);
-
-        final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
-        bdioDependencyWriter.write(outputDirectory, hubProjectName, rootNode);
-    }
-
     public void createFlatOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
             final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
@@ -85,12 +74,22 @@ public class PluginHelper {
         flatDependencyListWriter.write(outputDirectory, hubProjectName, rootNode);
     }
 
+    public void createHubOutput(final MavenProject project, final MavenSession session,
+            final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
+            final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor();
+        final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
+                hubProjectVersion);
+
+        final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
+        bdioDependencyWriter.write(outputDirectory, hubProjectName, rootNode);
+    }
+
     public void deployHubOutput(final HubServicesFactory services,
             final File outputDirectory, final String hubProjectName) throws IOException, ResourceDoesNotExistException, URISyntaxException, BDRestException {
-        final BomImportRestService bomImportRestService = services.createBomImportRestService();
-
         String filename = BdioDependencyWriter.getFilename(hubProjectName);
         final File file = new File(outputDirectory, filename);
+        final BomImportRestService bomImportRestService = services.createBomImportRestService();
         bomImportRestService.importBomFile(file, Constants.BDIO_FILE_MEDIA_TYPE);
 
         logger.info(String.format(Constants.UPLOAD_FILE_MESSAGE, file, bomImportRestService.getRestConnection().getBaseUrl()));
@@ -130,7 +129,7 @@ public class PluginHelper {
         }
         String htmlFileString = FileUtils.readFileToString(htmlFile, "UTF-8");
         String reportString = services.getRestConnection().getGson().toJson(riskreportData);
-        htmlFileString = htmlFileString.replace("TOKEN_RISK_REPORT_JSON_TOKEN", reportString);
+        htmlFileString = htmlFileString.replace(RiskReportResourceCopier.JSON_TOKEN_TO_REPLACE, reportString);
         FileUtils.writeStringToFile(htmlFile, htmlFileString, "UTF-8");
     }
 
@@ -138,7 +137,6 @@ public class PluginHelper {
             final String hubProjectVersion) throws IOException, URISyntaxException, BDRestException, ProjectDoesNotExistException, HubIntegrationException,
             MissingUUIDException, UnexpectedHubResponseException {
         final PolicyStatusDataService policyStatusDataService = services.createPolicyStatusDataService();
-
         final PolicyStatusItem policyStatusItem = policyStatusDataService
                 .getPolicyStatusForProjectAndVersion(hubProjectName, hubProjectVersion);
         return policyStatusItem;
