@@ -24,9 +24,7 @@ package com.blackducksoftware.integration.maven;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -41,16 +39,8 @@ import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.api.HubServicesFactory;
 import com.blackducksoftware.integration.hub.api.bom.BomImportRestService;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
-import com.blackducksoftware.integration.hub.api.project.ProjectItem;
-import com.blackducksoftware.integration.hub.api.project.ProjectRestService;
-import com.blackducksoftware.integration.hub.api.project.version.ProjectVersionItem;
-import com.blackducksoftware.integration.hub.api.project.version.ProjectVersionRestService;
-import com.blackducksoftware.integration.hub.api.report.HubRiskReportData;
-import com.blackducksoftware.integration.hub.api.report.ReportCategoriesEnum;
-import com.blackducksoftware.integration.hub.api.report.ReportFormatEnum;
-import com.blackducksoftware.integration.hub.api.report.ReportRestService;
-import com.blackducksoftware.integration.hub.api.report.RiskReportResourceCopier;
 import com.blackducksoftware.integration.hub.dataservices.policystatus.PolicyStatusDataService;
+import com.blackducksoftware.integration.hub.dataservices.report.RiskReportDataService;
 import com.blackducksoftware.integration.hub.dataservices.scan.ScanStatusDataService;
 import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
@@ -111,26 +101,8 @@ public class PluginHelper {
             final File outputDirectory, String projectName, String projectVersionName)
             throws IOException, BDRestException, URISyntaxException, HubIntegrationException, InterruptedException, UnexpectedHubResponseException,
             ProjectDoesNotExistException {
-        ProjectRestService projectRestService = services.createProjectRestService();
-        ProjectVersionRestService projectVersionRestService = services.createProjectVersionRestService();
-        ReportRestService reportRestService = services.createReportRestService(new Slf4jIntLogger(logger));
-        ProjectItem project = projectRestService.getProjectByName(projectName);
-        ProjectVersionItem version = projectVersionRestService.getProjectVersion(project, projectVersionName);
-        final ReportCategoriesEnum[] categories = { ReportCategoriesEnum.VERSION, ReportCategoriesEnum.COMPONENTS };
-        HubRiskReportData riskreportData = reportRestService.generateHubReport(version, ReportFormatEnum.JSON, categories);
-        RiskReportResourceCopier copier = new RiskReportResourceCopier(outputDirectory.getCanonicalPath());
-        List<File> writtenFiles = copier.copy();
-        File htmlFile = null;
-        for (File file : writtenFiles) {
-            if (file.getName().equals("riskreport.html")) {
-                htmlFile = file;
-                break;
-            }
-        }
-        String htmlFileString = FileUtils.readFileToString(htmlFile, "UTF-8");
-        String reportString = services.getRestConnection().getGson().toJson(riskreportData);
-        htmlFileString = htmlFileString.replace(RiskReportResourceCopier.JSON_TOKEN_TO_REPLACE, reportString);
-        FileUtils.writeStringToFile(htmlFile, htmlFileString, "UTF-8");
+        RiskReportDataService reportDataService = services.createRiskReportDataService(new Slf4jIntLogger(logger));
+        reportDataService.createRiskReport(outputDirectory, projectName, projectVersionName);
     }
 
     public PolicyStatusItem checkPolicies(final HubServicesFactory services, final String hubProjectName,
