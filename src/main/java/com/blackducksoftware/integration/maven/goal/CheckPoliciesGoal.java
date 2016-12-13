@@ -26,25 +26,18 @@ import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_E
 import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_FINISHED;
 import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_STARTING;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
-import com.blackducksoftware.integration.hub.api.HubServicesFactory;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
-import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
-import com.blackducksoftware.integration.hub.exception.MissingUUIDException;
-import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
-import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
+import com.blackducksoftware.integration.hub.service.HubServicesFactory;
 
 @Mojo(name = CHECK_POLICIES, defaultPhase = LifecyclePhase.PACKAGE)
 public class CheckPoliciesGoal extends HubMojo {
@@ -59,8 +52,7 @@ public class CheckPoliciesGoal extends HubMojo {
             final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(services, getHubProjectName(),
                     getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
-        } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-                | ProjectDoesNotExistException | HubIntegrationException | MissingUUIDException | UnexpectedHubResponseException e) {
+        } catch (IllegalArgumentException | EncryptionException | HubIntegrationException e) {
             throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
         }
 

@@ -41,7 +41,7 @@ import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusEnum;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
-import com.blackducksoftware.integration.hub.dataservices.policystatus.PolicyStatusDescription;
+import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDescription;
 import com.blackducksoftware.integration.maven.PluginConstants;
 import com.blackducksoftware.integration.maven.PluginHelper;
 

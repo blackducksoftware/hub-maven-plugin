@@ -30,7 +30,6 @@ import static com.blackducksoftware.integration.build.Constants.FAILED_TO_CREATE
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -41,15 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
-import com.blackducksoftware.integration.hub.api.HubServicesFactory;
-import com.blackducksoftware.integration.hub.exception.BDRestException;
 import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
-import com.blackducksoftware.integration.hub.exception.ProjectDoesNotExistException;
-import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
-import com.blackducksoftware.integration.hub.exception.UnexpectedHubResponseException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
+import com.blackducksoftware.integration.hub.service.HubServicesFactory;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputGoal extends HubMojo {
@@ -79,13 +74,11 @@ public class DeployHubOutputGoal extends HubMojo {
                 File reportOutput = new File(getOutputDirectory(), "report");
                 try {
                     PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
-                } catch (IllegalArgumentException | URISyntaxException | BDRestException | IOException
-                        | ProjectDoesNotExistException | HubIntegrationException | InterruptedException | UnexpectedHubResponseException e) {
+                } catch (HubIntegrationException e) {
                     throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
                 }
             }
-        } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-                | ResourceDoesNotExistException e) {
+        } catch (HubIntegrationException | IllegalArgumentException | EncryptionException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
 
