@@ -67,7 +67,7 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
             restConnection = new CredentialsRestConnection(hubServerConfig);
             services = new HubServicesFactory(restConnection);
             PLUGIN_HELPER.deployHubOutput(services, getOutputDirectory(),
-                    getHubProjectName());
+                    getProject().getArtifactId());
         } catch (HubIntegrationException | IllegalArgumentException | EncryptionException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
@@ -76,17 +76,17 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
             PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
                     getHubScanFinishedTimeout());
             if (getCreateHubReport()) {
-                File reportOutput = new File(getOutputDirectory(), "report");
+                final File reportOutput = new File(getOutputDirectory(), "report");
                 try {
                     PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
-                } catch (HubIntegrationException e) {
+                } catch (final HubIntegrationException e) {
                     throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
                 }
             }
             final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(services, getHubProjectName(),
                     getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
-        } catch (HubIntegrationException e) {
+        } catch (final HubIntegrationException e) {
             throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
         }
 
