@@ -136,11 +136,11 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getBdioFilename() {
-        return BdioDependencyWriter.getFilename(getHubProjectName());
+        return BdioDependencyWriter.getFilename(getProject().getArtifactId());
     }
 
     public String getFlatFilename() {
-        return FlatDependencyListWriter.getFilename(getHubProjectName());
+        return FlatDependencyListWriter.getFilename(getProject().getArtifactId());
     }
 
     public HubServerConfigBuilder getHubServerConfigBuilder() {
@@ -232,7 +232,7 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public int getHubTimeout() {
-        String deprecatedProperty = getDeprecatedProperty("hub-timeout");
+        final String deprecatedProperty = getDeprecatedProperty("hub-timeout");
         if (StringUtils.isNotBlank(deprecatedProperty)) {
             return NumberUtils.toInt(deprecatedProperty);
         }

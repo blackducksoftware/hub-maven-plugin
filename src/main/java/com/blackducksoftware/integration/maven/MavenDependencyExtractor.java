@@ -54,7 +54,7 @@ public class MavenDependencyExtractor {
         }
 
         final String groupId = project.getGroupId();
-        final String artifactId = projectName;
+        final String artifactId = project.getArtifactId();
         final String version = versionName;
         final Gav projectGav = new Gav(groupId, artifactId, version);
 
@@ -95,5 +95,4 @@ public class MavenDependencyExtractor {
         final Gav gav = new Gav(groupId, artifactId, version);
         return gav;
     }
-
 }

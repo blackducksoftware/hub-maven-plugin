@@ -66,12 +66,12 @@ public class PluginHelper {
                 hubProjectVersion);
 
         final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
-        bdioDependencyWriter.write(outputDirectory, hubProjectName, rootNode);
+        bdioDependencyWriter.write(outputDirectory, project.getArtifactId(), hubProjectName, rootNode);
     }
 
     public void deployHubOutput(final HubServicesFactory services,
             final File outputDirectory, final String hubProjectName) throws HubIntegrationException {
-        String filename = BdioDependencyWriter.getFilename(hubProjectName);
+        final String filename = BdioDependencyWriter.getFilename(hubProjectName);
         final File file = new File(outputDirectory, filename);
         final BomImportRequestService bomImportRequestService = services.createBomImportRequestService();
         bomImportRequestService.importBomFile(file, Constants.BDIO_FILE_MEDIA_TYPE);
@@ -85,7 +85,7 @@ public class PluginHelper {
         try {
             scanStatusDataService.assertBomImportScanStartedThenFinished(hubProjectName, hubProjectVersion,
                     scanStartedTimeout * 1000, scanFinishedTimeout * 1000, new Slf4jIntLogger(logger));
-        } catch (HubIntegrationException e) {
+        } catch (final HubIntegrationException e) {
             logger.error(String.format(Constants.SCAN_ERROR_MESSAGE, e.getMessage()), e);
         }
     }
@@ -93,7 +93,7 @@ public class PluginHelper {
     public void createRiskReport(final HubServicesFactory services,
             final File outputDirectory, String projectName, String projectVersionName)
             throws HubIntegrationException {
-        RiskReportDataService reportDataService = services.createRiskReportDataService(new Slf4jIntLogger(logger));
+        final RiskReportDataService reportDataService = services.createRiskReportDataService(new Slf4jIntLogger(logger));
         reportDataService.createRiskReportFiles(outputDirectory, projectName, projectVersionName);
     }
 

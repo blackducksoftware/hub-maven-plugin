@@ -65,16 +65,16 @@ public class DeployHubOutputGoal extends HubMojo {
         RestConnection restConnection;
         try {
             restConnection = new CredentialsRestConnection(hubServerConfig);
-            HubServicesFactory services = new HubServicesFactory(restConnection);
+            final HubServicesFactory services = new HubServicesFactory(restConnection);
             PLUGIN_HELPER.deployHubOutput(services, getOutputDirectory(),
-                    getHubProjectName());
+                    getProject().getArtifactId());
             if (getCreateHubReport()) {
                 PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
                         getHubScanFinishedTimeout());
-                File reportOutput = new File(getOutputDirectory(), "report");
+                final File reportOutput = new File(getOutputDirectory(), "report");
                 try {
                     PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
-                } catch (HubIntegrationException e) {
+                } catch (final HubIntegrationException e) {
                     throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
                 }
             }
@@ -84,5 +84,4 @@ public class DeployHubOutputGoal extends HubMojo {
 
         logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
     }
-
 }
