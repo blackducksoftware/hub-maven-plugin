@@ -41,7 +41,7 @@ import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusEnum;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
-import com.blackducksoftware.integration.hub.dataservices.policystatus.PolicyStatusDescription;
+import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDescription;
 import com.blackducksoftware.integration.maven.PluginConstants;
 import com.blackducksoftware.integration.maven.PluginHelper;
 
@@ -60,9 +60,6 @@ public abstract class HubMojo extends AbstractMojo {
 
     @Parameter(property = "hub.ignore.failure", defaultValue = "false")
     private boolean hubIgnoreFailure;
-
-    @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
-    private File outputDirectory;
 
     @Parameter(property = "hub.project.name")
     private String hubProjectName;
@@ -97,6 +94,18 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.proxy.password")
     private String hubProxyPassword;
 
+    @Parameter(property = "hub.create.report", defaultValue = "true")
+    private boolean createHubReport;
+
+    @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
+    private File outputDirectory;
+
+    @Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
+    private int hubScanStartedTimeout;
+
+    @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
+    private int hubScanFinishedTimeout;
+
     @Component
     private DependencyGraphBuilder dependencyGraphBuilder;
 
@@ -127,11 +136,11 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public String getBdioFilename() {
-        return BdioDependencyWriter.getFilename(getHubProjectName());
+        return BdioDependencyWriter.getFilename(getProject().getArtifactId());
     }
 
     public String getFlatFilename() {
-        return FlatDependencyListWriter.getFilename(getHubProjectName());
+        return FlatDependencyListWriter.getFilename(getProject().getArtifactId());
     }
 
     public HubServerConfigBuilder getHubServerConfigBuilder() {
@@ -287,6 +296,30 @@ public abstract class HubMojo extends AbstractMojo {
 
     public void setHubProxyPassword(final String hubProxyPassword) {
         this.hubProxyPassword = hubProxyPassword;
+    }
+
+    public boolean getCreateHubReport() {
+        return createHubReport;
+    }
+
+    public void setCreateHubReport(boolean createHubReport) {
+        this.createHubReport = createHubReport;
+    }
+
+    public int getHubScanStartedTimeout() {
+        return hubScanStartedTimeout;
+    }
+
+    public void setHubScanStartedTimeout(final int hubScanStartedTimeout) {
+        this.hubScanStartedTimeout = hubScanStartedTimeout;
+    }
+
+    public int getHubScanFinishedTimeout() {
+        return hubScanFinishedTimeout;
+    }
+
+    public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
+        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
     }
 
     public MavenProject getProject() {

@@ -26,9 +26,10 @@ import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPU
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_ERROR;
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_FINISHED;
 import static com.blackducksoftware.integration.build.Constants.DEPLOY_HUB_OUTPUT_STARTING;
+import static com.blackducksoftware.integration.build.Constants.FAILED_TO_CREATE_REPORT;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,12 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
-import com.blackducksoftware.integration.hub.exception.BDRestException;
-import com.blackducksoftware.integration.hub.exception.ResourceDoesNotExistException;
+import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
-import com.blackducksoftware.integration.log.Slf4jIntLogger;
+import com.blackducksoftware.integration.hub.service.HubServicesFactory;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputGoal extends HubMojo {
@@ -65,14 +65,23 @@ public class DeployHubOutputGoal extends HubMojo {
         RestConnection restConnection;
         try {
             restConnection = new CredentialsRestConnection(hubServerConfig);
-            PLUGIN_HELPER.deployHubOutput(new Slf4jIntLogger(logger), restConnection, getOutputDirectory(),
-                    getHubProjectName());
-        } catch (IllegalArgumentException | URISyntaxException | BDRestException | EncryptionException | IOException
-                | ResourceDoesNotExistException e) {
+            final HubServicesFactory services = new HubServicesFactory(restConnection);
+            PLUGIN_HELPER.deployHubOutput(services, getOutputDirectory(),
+                    getProject().getArtifactId());
+            if (getCreateHubReport()) {
+                PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
+                        getHubScanFinishedTimeout());
+                final File reportOutput = new File(getOutputDirectory(), "report");
+                try {
+                    PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
+                } catch (final HubIntegrationException e) {
+                    throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
+                }
+            }
+        } catch (HubIntegrationException | IllegalArgumentException | EncryptionException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
 
         logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
     }
-
 }
