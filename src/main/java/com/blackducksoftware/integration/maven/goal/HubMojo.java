@@ -104,7 +104,7 @@ public abstract class HubMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             performGoal();
-        } catch (final MojoFailureException e) {
+        } catch (final Exception e) {
             if (isHubIgnoreFailure()) {
                 logger.warn(String.format(
                         "Your task has failed: %s. Build will NOT be failed due to hub.ignore.failure being true.",
@@ -223,7 +223,7 @@ public abstract class HubMojo extends AbstractMojo {
     }
 
     public int getHubTimeout() {
-        String deprecatedProperty = getDeprecatedProperty("hub-timeout");
+        final String deprecatedProperty = getDeprecatedProperty("hub-timeout");
         if (StringUtils.isNotBlank(deprecatedProperty)) {
             return NumberUtils.toInt(deprecatedProperty);
         }
@@ -301,7 +301,7 @@ public abstract class HubMojo extends AbstractMojo {
         return dependencyGraphBuilder;
     }
 
-    private String getDeprecatedProperty(String key) {
+    private String getDeprecatedProperty(final String key) {
         return getProject().getProperties().getProperty(key);
     }
 

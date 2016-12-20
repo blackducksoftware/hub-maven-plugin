@@ -38,7 +38,7 @@ import com.blackducksoftware.integration.build.Gav;
 public class MavenDependencyExtractor {
     private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";
 
-    public DependencyNode getRootDependencyNode(DependencyGraphBuilder dependencyGraphBuilder, MavenSession session, final MavenProject project,
+    public DependencyNode getRootDependencyNode(final DependencyGraphBuilder dependencyGraphBuilder, final MavenSession session, final MavenProject project,
             final String projectName,
             final String versionName) throws MojoExecutionException {
         org.apache.maven.shared.dependency.graph.DependencyNode rootNode = null;
