@@ -55,7 +55,7 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
 
         try {
             PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-                    getHubProjectName(), getHubVersionName());
+                    getHubProjectName(), getHubVersionName(), getExcludedModules());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }

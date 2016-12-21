@@ -22,8 +22,11 @@
 package com.blackducksoftware.integration.maven;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -37,6 +40,19 @@ import com.blackducksoftware.integration.build.Gav;
 
 public class MavenDependencyExtractor {
     private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";
+
+    private final Set<String> excludedModules = new HashSet<>();
+
+    public MavenDependencyExtractor(final String excludedModules) {
+        if (StringUtils.isNotBlank(excludedModules)) {
+            final String[] pieces = excludedModules.split(",");
+            for (final String piece : pieces) {
+                if (StringUtils.isNotBlank(piece)) {
+                    this.excludedModules.add(piece);
+                }
+            }
+        }
+    }
 
     public DependencyNode getRootDependencyNode(final DependencyGraphBuilder dependencyGraphBuilder, final MavenSession session, final MavenProject project,
             final String projectName,
@@ -65,9 +81,11 @@ public class MavenDependencyExtractor {
         }
 
         for (final MavenProject moduleProject : project.getCollectedProjects()) {
-            final DependencyNode moduleRootNode = getRootDependencyNode(dependencyGraphBuilder, session, moduleProject, moduleProject.getArtifactId(),
-                    moduleProject.getVersion());
-            children.addAll(moduleRootNode.getChildren());
+            if (!excludedModules.contains(moduleProject.getArtifactId())) {
+                final DependencyNode moduleRootNode = getRootDependencyNode(dependencyGraphBuilder, session, moduleProject, moduleProject.getArtifactId(),
+                        moduleProject.getVersion());
+                children.addAll(moduleRootNode.getChildren());
+            }
         }
 
         return root;

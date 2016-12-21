@@ -49,8 +49,8 @@ public class PluginHelper {
 
     public void createFlatOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
-            final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor();
+            final String hubProjectName, final String hubProjectVersion, final String excludedModules) throws MojoExecutionException, IOException {
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(excludedModules);
         final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
                 hubProjectVersion);
 
@@ -60,8 +60,8 @@ public class PluginHelper {
 
     public void createHubOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
-            final String hubProjectName, final String hubProjectVersion) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor();
+            final String hubProjectName, final String hubProjectVersion, final String excludedModules) throws MojoExecutionException, IOException {
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(excludedModules);
         final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
                 hubProjectVersion);
 
@@ -91,7 +91,7 @@ public class PluginHelper {
     }
 
     public void createRiskReport(final HubServicesFactory services,
-            final File outputDirectory, String projectName, String projectVersionName)
+            final File outputDirectory, final String projectName, final String projectVersionName)
             throws HubIntegrationException {
         final RiskReportDataService reportDataService = services.createRiskReportDataService(new Slf4jIntLogger(logger));
         reportDataService.createRiskReportFiles(outputDirectory, projectName, projectVersionName);

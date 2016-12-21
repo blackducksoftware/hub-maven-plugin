@@ -106,6 +106,9 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
     private int hubScanFinishedTimeout;
 
+    @Parameter(property = "excluded.modules", defaultValue = "")
+    private String excludedModules;
+
     @Component
     private DependencyGraphBuilder dependencyGraphBuilder;
 
@@ -302,7 +305,7 @@ public abstract class HubMojo extends AbstractMojo {
         return createHubReport;
     }
 
-    public void setCreateHubReport(boolean createHubReport) {
+    public void setCreateHubReport(final boolean createHubReport) {
         this.createHubReport = createHubReport;
     }
 
@@ -320,6 +323,14 @@ public abstract class HubMojo extends AbstractMojo {
 
     public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
         this.hubScanFinishedTimeout = hubScanFinishedTimeout;
+    }
+
+    public String getExcludedModules() {
+        return excludedModules;
+    }
+
+    public void setExcludedModules(final String excludedModules) {
+        this.excludedModules = excludedModules;
     }
 
     public MavenProject getProject() {
