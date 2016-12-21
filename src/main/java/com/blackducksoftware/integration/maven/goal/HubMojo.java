@@ -106,6 +106,9 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
     private int hubScanFinishedTimeout;
 
+    @Parameter(property = "included.scopes", defaultValue = "compile")
+    private String includedScopes;
+
     @Parameter(property = "excluded.modules", defaultValue = "")
     private String excludedModules;
 
@@ -323,6 +326,14 @@ public abstract class HubMojo extends AbstractMojo {
 
     public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
         this.hubScanFinishedTimeout = hubScanFinishedTimeout;
+    }
+
+    public String getIncludedScopes() {
+        return includedScopes;
+    }
+
+    public void setIncludedScopes(final String includedScopes) {
+        this.includedScopes = includedScopes;
     }
 
     public String getExcludedModules() {

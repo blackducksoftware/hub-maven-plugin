@@ -43,12 +43,23 @@ public class MavenDependencyExtractor {
 
     private final Set<String> excludedModules = new HashSet<>();
 
-    public MavenDependencyExtractor(final String excludedModules) {
+    private final Set<String> includedScopes = new HashSet<>();
+
+    public MavenDependencyExtractor(final String excludedModules, final String includedScopes) {
         if (StringUtils.isNotBlank(excludedModules)) {
             final String[] pieces = excludedModules.split(",");
             for (final String piece : pieces) {
                 if (StringUtils.isNotBlank(piece)) {
                     this.excludedModules.add(piece);
+                }
+            }
+        }
+
+        if (StringUtils.isNotBlank(includedScopes)) {
+            final String[] pieces = includedScopes.split(",");
+            for (final String piece : pieces) {
+                if (StringUtils.isNotBlank(piece)) {
+                    this.includedScopes.add(piece);
                 }
             }
         }
@@ -77,7 +88,9 @@ public class MavenDependencyExtractor {
         final List<DependencyNode> children = new ArrayList<>();
         final DependencyNode root = new DependencyNode(projectGav, children);
         for (final org.apache.maven.shared.dependency.graph.DependencyNode child : rootNode.getChildren()) {
-            children.add(createCommonDependencyNode(child));
+            if (includedScopes.contains(child.getArtifact().getScope())) {
+                children.add(createCommonDependencyNode(child));
+            }
         }
 
         for (final MavenProject moduleProject : project.getCollectedProjects()) {

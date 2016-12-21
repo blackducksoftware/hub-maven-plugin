@@ -35,6 +35,7 @@ import com.blackducksoftware.integration.build.Constants;
 import com.blackducksoftware.integration.build.DependencyNode;
 import com.blackducksoftware.integration.build.utils.BdioDependencyWriter;
 import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
+import com.blackducksoftware.integration.build.utils.ProjectVersionWriter;
 import com.blackducksoftware.integration.hub.api.bom.BomImportRequestService;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDataService;
@@ -49,24 +50,32 @@ public class PluginHelper {
 
     public void createFlatOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
-            final String hubProjectName, final String hubProjectVersion, final String excludedModules) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(excludedModules);
+            final String hubProjectName, final String hubProjectVersion, final String excludedModules, final String includedScopes)
+            throws MojoExecutionException, IOException {
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(excludedModules, includedScopes);
         final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
                 hubProjectVersion);
 
         final FlatDependencyListWriter flatDependencyListWriter = new FlatDependencyListWriter();
         flatDependencyListWriter.write(outputDirectory, hubProjectName, rootNode);
+
+        final ProjectVersionWriter projectVersionWriter = new ProjectVersionWriter();
+        projectVersionWriter.write(outputDirectory, hubProjectVersion);
     }
 
     public void createHubOutput(final MavenProject project, final MavenSession session,
             final DependencyGraphBuilder dependencyGraphBuilder, final File outputDirectory,
-            final String hubProjectName, final String hubProjectVersion, final String excludedModules) throws MojoExecutionException, IOException {
-        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(excludedModules);
+            final String hubProjectName, final String hubProjectVersion, final String excludedModules, final String includedScopes)
+            throws MojoExecutionException, IOException {
+        final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(excludedModules, includedScopes);
         final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(dependencyGraphBuilder, session, project, hubProjectName,
                 hubProjectVersion);
 
         final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
         bdioDependencyWriter.write(outputDirectory, project.getArtifactId(), hubProjectName, rootNode);
+
+        final ProjectVersionWriter projectVersionWriter = new ProjectVersionWriter();
+        projectVersionWriter.write(outputDirectory, hubProjectVersion);
     }
 
     public void deployHubOutput(final HubServicesFactory services,
