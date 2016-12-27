@@ -1,4 +1,6 @@
-/*******************************************************************************
+/**
+ * hub-maven-plugin
+ *
  * Copyright (C) 2016 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
@@ -18,13 +20,13 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *******************************************************************************/
+ */
 package com.blackducksoftware.integration.maven.goal;
 
-import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT;
-import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT_ERROR;
-import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT_FINISHED;
-import static com.blackducksoftware.integration.build.Constants.CREATE_HUB_OUTPUT_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT_STARTING;
 
 import java.io.IOException;
 

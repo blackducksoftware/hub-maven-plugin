@@ -1,4 +1,6 @@
-/*******************************************************************************
+/**
+ * hub-maven-plugin
+ *
  * Copyright (C) 2016 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
@@ -18,7 +20,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *******************************************************************************/
+ */
 package com.blackducksoftware.integration.maven;
 
 import java.util.ArrayList;
@@ -35,8 +37,8 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 
-import com.blackducksoftware.integration.build.DependencyNode;
-import com.blackducksoftware.integration.build.Gav;
+import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
+import com.blackducksoftware.integration.hub.buildtool.Gav;
 
 public class MavenDependencyExtractor {
     private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";

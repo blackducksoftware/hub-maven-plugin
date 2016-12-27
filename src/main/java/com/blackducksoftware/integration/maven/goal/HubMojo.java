@@ -1,4 +1,6 @@
-/*******************************************************************************
+/**
+ * hub-maven-plugin
+ *
  * Copyright (C) 2016 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
@@ -18,7 +20,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *******************************************************************************/
+ */
 package com.blackducksoftware.integration.maven.goal;
 
 import java.io.File;
@@ -36,11 +38,11 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.blackducksoftware.integration.build.utils.BdioDependencyWriter;
-import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusEnum;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
+import com.blackducksoftware.integration.hub.buildtool.FlatDependencyListWriter;
+import com.blackducksoftware.integration.hub.buildtool.bdio.BdioDependencyWriter;
 import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDescription;
 import com.blackducksoftware.integration.maven.PluginConstants;
 import com.blackducksoftware.integration.maven.PluginHelper;

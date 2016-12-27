@@ -1,4 +1,6 @@
-/*******************************************************************************
+/**
+ * hub-maven-plugin
+ *
  * Copyright (C) 2016 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
@@ -18,13 +20,13 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *******************************************************************************/
+ */
 package com.blackducksoftware.integration.maven.goal;
 
-import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES;
-import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_ERROR;
-import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_FINISHED;
-import static com.blackducksoftware.integration.build.Constants.CHECK_POLICIES_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES_STARTING;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -48,7 +50,7 @@ public class CheckPoliciesGoal extends HubMojo {
         final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
         try {
             final RestConnection restConnection = new CredentialsRestConnection(hubServerConfig);
-            HubServicesFactory services = new HubServicesFactory(restConnection);
+            final HubServicesFactory services = new HubServicesFactory(restConnection);
             final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(services, getHubProjectName(),
                     getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);

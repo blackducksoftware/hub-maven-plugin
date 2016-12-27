@@ -1,4 +1,6 @@
-/*******************************************************************************
+/**
+ * hub-maven-plugin
+ *
  * Copyright (C) 2016 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
@@ -18,8 +20,12 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *******************************************************************************/
+ */
 package com.blackducksoftware.integration.maven;
+
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.BDIO_FILE_MEDIA_TYPE;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.SCAN_ERROR_MESSAGE;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.UPLOAD_FILE_MESSAGE;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,13 +37,12 @@ import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.blackducksoftware.integration.build.Constants;
-import com.blackducksoftware.integration.build.DependencyNode;
-import com.blackducksoftware.integration.build.utils.BdioDependencyWriter;
-import com.blackducksoftware.integration.build.utils.FlatDependencyListWriter;
-import com.blackducksoftware.integration.build.utils.ProjectVersionWriter;
 import com.blackducksoftware.integration.hub.api.bom.BomImportRequestService;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
+import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
+import com.blackducksoftware.integration.hub.buildtool.FlatDependencyListWriter;
+import com.blackducksoftware.integration.hub.buildtool.HubProjectDetailsWriter;
+import com.blackducksoftware.integration.hub.buildtool.bdio.BdioDependencyWriter;
 import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDataService;
 import com.blackducksoftware.integration.hub.dataservice.report.RiskReportDataService;
 import com.blackducksoftware.integration.hub.dataservice.scan.ScanStatusDataService;
@@ -59,8 +64,8 @@ public class PluginHelper {
         final FlatDependencyListWriter flatDependencyListWriter = new FlatDependencyListWriter();
         flatDependencyListWriter.write(outputDirectory, hubProjectName, rootNode);
 
-        final ProjectVersionWriter projectVersionWriter = new ProjectVersionWriter();
-        projectVersionWriter.write(outputDirectory, hubProjectVersion);
+        final HubProjectDetailsWriter hubProjectDetailsWriter = new HubProjectDetailsWriter();
+        hubProjectDetailsWriter.write(outputDirectory, hubProjectName, hubProjectVersion);
     }
 
     public void createHubOutput(final MavenProject project, final MavenSession session,
@@ -74,8 +79,8 @@ public class PluginHelper {
         final BdioDependencyWriter bdioDependencyWriter = new BdioDependencyWriter();
         bdioDependencyWriter.write(outputDirectory, project.getArtifactId(), hubProjectName, rootNode);
 
-        final ProjectVersionWriter projectVersionWriter = new ProjectVersionWriter();
-        projectVersionWriter.write(outputDirectory, hubProjectVersion);
+        final HubProjectDetailsWriter hubProjectDetailsWriter = new HubProjectDetailsWriter();
+        hubProjectDetailsWriter.write(outputDirectory, hubProjectName, hubProjectVersion);
     }
 
     public void deployHubOutput(final HubServicesFactory services,
@@ -83,9 +88,9 @@ public class PluginHelper {
         final String filename = BdioDependencyWriter.getFilename(hubProjectName);
         final File file = new File(outputDirectory, filename);
         final BomImportRequestService bomImportRequestService = services.createBomImportRequestService();
-        bomImportRequestService.importBomFile(file, Constants.BDIO_FILE_MEDIA_TYPE);
+        bomImportRequestService.importBomFile(file, BDIO_FILE_MEDIA_TYPE);
 
-        logger.info(String.format(Constants.UPLOAD_FILE_MESSAGE, file, bomImportRequestService.getRestConnection().getBaseUrl()));
+        logger.info(String.format(UPLOAD_FILE_MESSAGE, file, bomImportRequestService.getRestConnection().getBaseUrl()));
     }
 
     public void waitForHub(final HubServicesFactory services, final String hubProjectName,
@@ -95,7 +100,7 @@ public class PluginHelper {
             scanStatusDataService.assertBomImportScanStartedThenFinished(hubProjectName, hubProjectVersion,
                     scanStartedTimeout * 1000, scanFinishedTimeout * 1000, new Slf4jIntLogger(logger));
         } catch (final HubIntegrationException e) {
-            logger.error(String.format(Constants.SCAN_ERROR_MESSAGE, e.getMessage()), e);
+            logger.error(String.format(SCAN_ERROR_MESSAGE, e.getMessage()), e);
         }
     }
 
