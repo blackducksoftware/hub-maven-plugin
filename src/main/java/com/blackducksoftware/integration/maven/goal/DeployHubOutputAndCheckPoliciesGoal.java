@@ -42,11 +42,13 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
+import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
 import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
 import com.blackducksoftware.integration.hub.global.HubServerConfig;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
 import com.blackducksoftware.integration.hub.rest.RestConnection;
 import com.blackducksoftware.integration.hub.service.HubServicesFactory;
+import com.blackducksoftware.integration.maven.MavenDependencyExtractor;
 
 @Mojo(name = DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
@@ -56,8 +58,13 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         logger.info(String.format(DEPLOY_HUB_OUTPUT_AND_CHECK_POLICIES_STARTING, getBdioFilename()));
 
         try {
-            PLUGIN_HELPER.createHubOutput(getProject(), getSession(), getDependencyGraphBuilder(), getOutputDirectory(),
-                    getHubProjectName(), getHubVersionName(), getExcludedModules(), getIncludedScopes());
+            final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(getExcludedModules(), getIncludedScopes());
+            final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(getDependencyGraphBuilder(), getSession(), getProject(),
+                    getHubProjectName(),
+                    getHubVersionName());
+
+            PLUGIN_HELPER.createHubOutput(rootNode, getProject().getName(), getHubProjectName(),
+                    getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
@@ -75,12 +82,11 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         }
 
         try {
-            PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanStartedTimeout(),
-                    getHubScanFinishedTimeout());
+            PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
             if (getCreateHubReport()) {
                 final File reportOutput = new File(getOutputDirectory(), "report");
                 try {
-                    PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName());
+                    PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
                 } catch (final HubIntegrationException e) {
                     throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
                 }

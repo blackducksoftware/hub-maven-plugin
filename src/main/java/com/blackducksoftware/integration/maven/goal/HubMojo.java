@@ -44,15 +44,16 @@ import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.buildtool.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.buildtool.bdio.BdioDependencyWriter;
 import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDescription;
+import com.blackducksoftware.integration.hub.dependency.DependencyManagerHelper;
+import com.blackducksoftware.integration.log.Slf4jIntLogger;
 import com.blackducksoftware.integration.maven.PluginConstants;
-import com.blackducksoftware.integration.maven.PluginHelper;
 
 public abstract class HubMojo extends AbstractMojo {
     // NOTE: getClass() is a little strange here, but we want the runtime class,
     // not HubMojo, as it is abstract.
     public final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public static final PluginHelper PLUGIN_HELPER = new PluginHelper();
+    public static final DependencyManagerHelper PLUGIN_HELPER = new DependencyManagerHelper(new Slf4jIntLogger(LoggerFactory.getLogger(HubMojo.class)));
 
     @Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
     private MavenProject project;
@@ -102,11 +103,8 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
     private File outputDirectory;
 
-    @Parameter(property = "hub.scan.started.timeout", defaultValue = "300")
-    private int hubScanStartedTimeout;
-
-    @Parameter(property = "hub.scan.finished.timeout", defaultValue = "300")
-    private int hubScanFinishedTimeout;
+    @Parameter(property = "hub.scan.timeout", defaultValue = "300")
+    private int hubScanTimeout;
 
     @Parameter(property = "included.scopes", defaultValue = "compile")
     private String includedScopes;
@@ -314,20 +312,13 @@ public abstract class HubMojo extends AbstractMojo {
         this.createHubReport = createHubReport;
     }
 
-    public int getHubScanStartedTimeout() {
-        return hubScanStartedTimeout;
+    public int getHubScanTimeout() {
+
+        return hubScanTimeout;
     }
 
-    public void setHubScanStartedTimeout(final int hubScanStartedTimeout) {
-        this.hubScanStartedTimeout = hubScanStartedTimeout;
-    }
-
-    public int getHubScanFinishedTimeout() {
-        return hubScanFinishedTimeout;
-    }
-
-    public void setHubScanFinishedTimeout(final int hubScanFinishedTimeout) {
-        this.hubScanFinishedTimeout = hubScanFinishedTimeout;
+    public void setHubScanTimeout(final int hubScanTimeout) {
+        this.hubScanTimeout = hubScanTimeout;
     }
 
     public String getIncludedScopes() {

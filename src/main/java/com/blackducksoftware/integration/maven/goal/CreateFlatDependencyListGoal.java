@@ -36,6 +36,9 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
+import com.blackducksoftware.integration.maven.MavenDependencyExtractor;
+
 @Mojo(name = CREATE_FLAT_DEPENDENCY_LIST, requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, aggregator = true)
 public class CreateFlatDependencyListGoal extends HubMojo {
     @Override
@@ -43,8 +46,13 @@ public class CreateFlatDependencyListGoal extends HubMojo {
         logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_STARTING, getFlatFilename()));
 
         try {
-            PLUGIN_HELPER.createFlatOutput(getProject(), getSession(), getDependencyGraphBuilder(),
-                    getOutputDirectory(), getHubProjectName(), getHubVersionName(), getExcludedModules(), getIncludedScopes());
+            final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(getExcludedModules(), getIncludedScopes());
+            final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(getDependencyGraphBuilder(), getSession(), getProject(),
+                    getHubProjectName(),
+                    getHubVersionName());
+
+            PLUGIN_HELPER.createFlatOutput(rootNode,
+                    getHubProjectName(), getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_FLAT_DEPENDENCY_LIST_ERROR, e.getMessage()), e);
         }
