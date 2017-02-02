@@ -51,7 +51,7 @@ public class CreateFlatDependencyListGoal extends HubMojo {
                     getHubProjectName(),
                     getHubVersionName());
 
-            PLUGIN_HELPER.createFlatOutput(rootNode,
+            BUILD_TOOL_HELPER.createFlatOutput(rootNode,
                     getHubProjectName(), getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_FLAT_DEPENDENCY_LIST_ERROR, e.getMessage()), e);

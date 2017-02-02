@@ -63,7 +63,7 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
                     getHubProjectName(),
                     getHubVersionName());
 
-            PLUGIN_HELPER.createHubOutput(rootNode, getProject().getName(), getHubProjectName(),
+            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getName(), getHubProjectName(),
                     getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
@@ -75,23 +75,23 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
         try {
             restConnection = new CredentialsRestConnection(hubServerConfig);
             services = new HubServicesFactory(restConnection);
-            PLUGIN_HELPER.deployHubOutput(services, getOutputDirectory(),
+            BUILD_TOOL_HELPER.deployHubOutput(services, getOutputDirectory(),
                     getProject().getArtifactId());
         } catch (HubIntegrationException | IllegalArgumentException | EncryptionException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
 
         try {
-            PLUGIN_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
+            BUILD_TOOL_HELPER.waitForHub(services, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
             if (getCreateHubReport()) {
                 final File reportOutput = new File(getOutputDirectory(), "report");
                 try {
-                    PLUGIN_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
+                    BUILD_TOOL_HELPER.createRiskReport(services, reportOutput, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
                 } catch (final HubIntegrationException e) {
                     throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
                 }
             }
-            final PolicyStatusItem policyStatusItem = PLUGIN_HELPER.checkPolicies(services, getHubProjectName(),
+            final PolicyStatusItem policyStatusItem = BUILD_TOOL_HELPER.checkPolicies(services, getHubProjectName(),
                     getHubVersionName());
             handlePolicyStatusItem(policyStatusItem);
         } catch (final HubIntegrationException e) {

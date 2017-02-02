@@ -51,7 +51,7 @@ public class CreateHubOutputGoal extends HubMojo {
                     getHubProjectName(),
                     getHubVersionName());
 
-            PLUGIN_HELPER.createHubOutput(rootNode, getProject().getName(), getHubProjectName(),
+            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getName(), getHubProjectName(),
                     getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
