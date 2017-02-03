@@ -23,7 +23,27 @@
  */
 package com.blackducksoftware.integration.maven.goal;
 
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.BUILD_TOOL_CONFIGURATION_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.BUILD_TOOL_STEP;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CHECK_POLICIES_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_FLAT_DEPENDENCY_LIST_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_FLAT_DEPENDENCY_LIST_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_FLAT_DEPENDENCY_LIST_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_HUB_OUTPUT_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_REPORT_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.CREATE_REPORT_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.DEPLOY_HUB_OUTPUT_ERROR;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.DEPLOY_HUB_OUTPUT_FINISHED;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.DEPLOY_HUB_OUTPUT_STARTING;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.FAILED_TO_CREATE_REPORT;
+import static com.blackducksoftware.integration.hub.buildtool.BuildToolConstants.SCAN_ERROR_MESSAGE;
+
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -32,28 +52,37 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.blackducksoftware.integration.exception.EncryptionException;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusEnum;
 import com.blackducksoftware.integration.hub.api.policy.PolicyStatusItem;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.buildtool.BuildToolHelper;
+import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
 import com.blackducksoftware.integration.hub.buildtool.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.buildtool.bdio.BdioDependencyWriter;
 import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDescription;
+import com.blackducksoftware.integration.hub.exception.HubIntegrationException;
+import com.blackducksoftware.integration.hub.global.HubServerConfig;
+import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
+import com.blackducksoftware.integration.hub.rest.RestConnection;
+import com.blackducksoftware.integration.hub.service.HubServicesFactory;
 import com.blackducksoftware.integration.log.Slf4jIntLogger;
+import com.blackducksoftware.integration.maven.MavenDependencyExtractor;
 import com.blackducksoftware.integration.maven.PluginConstants;
 
-public abstract class HubMojo extends AbstractMojo {
-    // NOTE: getClass() is a little strange here, but we want the runtime class,
-    // not HubMojo, as it is abstract.
+@Mojo(name = BUILD_TOOL_STEP, defaultPhase = LifecyclePhase.PACKAGE)
+public class BuildBOMGoal extends AbstractMojo {
     public final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public static final BuildToolHelper BUILD_TOOL_HELPER = new BuildToolHelper(new Slf4jIntLogger(LoggerFactory.getLogger(HubMojo.class)));
+    private BuildToolHelper BUILD_TOOL_HELPER;
 
     @Parameter(defaultValue = PluginConstants.PARAM_PROJECT, readonly = true, required = true)
     private MavenProject project;
@@ -97,8 +126,20 @@ public abstract class HubMojo extends AbstractMojo {
     @Parameter(property = "hub.proxy.password")
     private String hubProxyPassword;
 
-    @Parameter(property = "hub.create.report", defaultValue = "true")
+    @Parameter(property = "hub.create.flat.list")
+    private boolean createFlatDependencyList;
+
+    @Parameter(property = "hub.create.bdio", defaultValue = "true")
+    private boolean createHubBdio;
+
+    @Parameter(property = "hub.deploy.bdio", defaultValue = "true")
+    private boolean deployHubBdio;
+
+    @Parameter(property = "hub.create.report")
     private boolean createHubReport;
+
+    @Parameter(property = "hub.check.policies")
+    private boolean checkPolicies;
 
     @Parameter(property = "hub.output.directory", defaultValue = PluginConstants.PARAM_TARGET_DIR)
     private File outputDirectory;
@@ -115,6 +156,10 @@ public abstract class HubMojo extends AbstractMojo {
     @Component
     private DependencyGraphBuilder dependencyGraphBuilder;
 
+    private HubServicesFactory services;
+
+    private boolean waitedForHub;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -130,7 +175,126 @@ public abstract class HubMojo extends AbstractMojo {
         }
     }
 
-    public abstract void performGoal() throws MojoExecutionException, MojoFailureException;
+    private void performGoal() throws MojoExecutionException, MojoFailureException {
+        BUILD_TOOL_HELPER = new BuildToolHelper(new Slf4jIntLogger(logger));
+
+        if (getCreateFlatDependencyList()) {
+            createFlatDependencyList();
+        }
+        if (getCreateHubBdio()) {
+            createHubBDIO();
+        }
+        if (getDeployHubBdio()) {
+            deployHubBDIO();
+        }
+        if (getCreateHubReport()) {
+            createHubReport();
+        }
+        if (getCheckPolicies()) {
+            checkHubPolicies();
+        }
+    }
+
+    private HubServicesFactory getHubServicesFactory() throws MojoFailureException {
+        if (services == null) {
+            final RestConnection restConnection;
+            try {
+                final HubServerConfig hubServerConfig = getHubServerConfigBuilder().build();
+                restConnection = new CredentialsRestConnection(hubServerConfig);
+            } catch (final IllegalArgumentException e) {
+                throw new MojoFailureException(String.format(BUILD_TOOL_CONFIGURATION_ERROR, e.getMessage()), e);
+            } catch (final EncryptionException e) {
+                throw new MojoFailureException(String.format(BUILD_TOOL_CONFIGURATION_ERROR, e.getMessage()), e);
+            }
+            services = new HubServicesFactory(restConnection);
+        }
+        return services;
+    }
+
+    private void waitForHub() throws MojoFailureException, MojoExecutionException {
+        if (!waitedForHub) {
+            try {
+                BUILD_TOOL_HELPER.waitForHub(getHubServicesFactory(), getHubProjectName(), getHubVersionName(), getHubScanTimeout());
+                waitedForHub = true;
+            } catch (final HubIntegrationException e) {
+                throw new MojoExecutionException(String.format(SCAN_ERROR_MESSAGE, e.getMessage()), e);
+            }
+        }
+    }
+
+    private void createFlatDependencyList() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_STARTING, getFlatFilename()));
+
+        try {
+            final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(getExcludedModules(), getIncludedScopes());
+            final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(getDependencyGraphBuilder(), getSession(), getProject(),
+                    getHubProjectName(),
+                    getHubVersionName());
+
+            BUILD_TOOL_HELPER.createFlatOutput(rootNode,
+                    getHubProjectName(), getHubVersionName(), getOutputDirectory());
+        } catch (final IOException e) {
+            throw new MojoFailureException(String.format(CREATE_FLAT_DEPENDENCY_LIST_ERROR, e.getMessage()), e);
+        }
+
+        logger.info(String.format(CREATE_FLAT_DEPENDENCY_LIST_FINISHED, getFlatFilename()));
+    }
+
+    private void createHubBDIO() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CREATE_HUB_OUTPUT_STARTING, getBdioFilename()));
+
+        try {
+            final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(getExcludedModules(), getIncludedScopes());
+            final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(getDependencyGraphBuilder(), getSession(), getProject(),
+                    getHubProjectName(),
+                    getHubVersionName());
+
+            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getArtifactId(), getHubProjectName(),
+                    getHubVersionName(), getOutputDirectory());
+        } catch (final IOException e) {
+            throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
+
+        logger.info(String.format(CREATE_HUB_OUTPUT_FINISHED, getBdioFilename()));
+    }
+
+    private void deployHubBDIO() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(DEPLOY_HUB_OUTPUT_STARTING, getBdioFilename()));
+
+        try {
+            BUILD_TOOL_HELPER.deployHubOutput(getHubServicesFactory(), getOutputDirectory(),
+                    getProject().getArtifactId());
+        } catch (HubIntegrationException | IllegalArgumentException e) {
+            throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
+        }
+        logger.info(String.format(DEPLOY_HUB_OUTPUT_FINISHED, getBdioFilename()));
+    }
+
+    private void createHubReport() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CREATE_REPORT_STARTING, getBdioFilename()));
+        waitForHub();
+        final File reportOutput = new File(getOutputDirectory(), "report");
+        try {
+            BUILD_TOOL_HELPER.createRiskReport(getHubServicesFactory(), reportOutput, getHubProjectName(), getHubVersionName(), getHubScanTimeout());
+        } catch (final HubIntegrationException e) {
+            throw new MojoFailureException(String.format(FAILED_TO_CREATE_REPORT, e.getMessage()), e);
+        }
+        logger.info(String.format(CREATE_REPORT_FINISHED, getBdioFilename()));
+    }
+
+    private void checkHubPolicies() throws MojoExecutionException, MojoFailureException {
+        logger.info(String.format(CHECK_POLICIES_STARTING, getBdioFilename()));
+        waitForHub();
+        try {
+            final PolicyStatusItem policyStatusItem = BUILD_TOOL_HELPER.checkPolicies(getHubServicesFactory(), getHubProjectName(),
+                    getHubVersionName());
+            handlePolicyStatusItem(policyStatusItem);
+        } catch (IllegalArgumentException | HubIntegrationException e) {
+            throw new MojoFailureException(String.format(CHECK_POLICIES_ERROR, e.getMessage()), e);
+        }
+
+        logger.info(String.format(CHECK_POLICIES_FINISHED, getBdioFilename()));
+    }
 
     public void handlePolicyStatusItem(final PolicyStatusItem policyStatusItem) throws MojoFailureException {
         final PolicyStatusDescription policyStatusDescription = new PolicyStatusDescription(policyStatusItem);
@@ -351,6 +515,38 @@ public abstract class HubMojo extends AbstractMojo {
 
     private String getDeprecatedProperty(final String key) {
         return getProject().getProperties().getProperty(key);
+    }
+
+    public boolean getCreateFlatDependencyList() {
+        return createFlatDependencyList;
+    }
+
+    public void setCreateFlatDependencyList(final boolean createFlatDependencyList) {
+        this.createFlatDependencyList = createFlatDependencyList;
+    }
+
+    public boolean getCreateHubBdio() {
+        return createHubBdio;
+    }
+
+    public void setCreateHubBdio(final boolean createHubBdio) {
+        this.createHubBdio = createHubBdio;
+    }
+
+    public boolean getDeployHubBdio() {
+        return deployHubBdio;
+    }
+
+    public void setDeployHubBdio(final boolean deployHubBdio) {
+        this.deployHubBdio = deployHubBdio;
+    }
+
+    public boolean getCheckPolicies() {
+        return checkPolicies;
+    }
+
+    public void setCheckPolicies(final boolean checkPolicies) {
+        this.checkPolicies = checkPolicies;
     }
 
 }
