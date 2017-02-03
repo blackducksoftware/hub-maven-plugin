@@ -63,7 +63,7 @@ public class DeployHubOutputAndCheckPoliciesGoal extends HubMojo {
                     getHubProjectName(),
                     getHubVersionName());
 
-            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getName(), getHubProjectName(),
+            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getArtifactId(), getHubProjectName(),
                     getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
