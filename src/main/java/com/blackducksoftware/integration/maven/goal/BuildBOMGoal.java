@@ -212,7 +212,7 @@ public class BuildBOMGoal extends AbstractMojo {
     }
 
     private void waitForHub() throws MojoFailureException, MojoExecutionException {
-        if (!waitedForHub) {
+        if (getDeployHubBdio() && !waitedForHub) {
             try {
                 BUILD_TOOL_HELPER.waitForHub(getHubServicesFactory(), getHubProjectName(), getHubVersionName(), getHubScanTimeout());
                 waitedForHub = true;
