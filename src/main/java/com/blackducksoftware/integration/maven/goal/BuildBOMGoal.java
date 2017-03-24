@@ -92,6 +92,9 @@ public class BuildBOMGoal extends AbstractMojo {
     @Parameter(property = "hub.ignore.failure", defaultValue = "false")
     private boolean hubIgnoreFailure;
 
+    @Parameter(property = "hub.code.location.name")
+    private String hubCodeLocationName;
+
     @Parameter(property = "hub.project.name")
     private String hubProjectName;
 
@@ -258,10 +261,9 @@ public class BuildBOMGoal extends AbstractMojo {
         try {
             final MavenDependencyExtractor mavenDependencyExtractor = new MavenDependencyExtractor(getExcludedModules(), getIncludedScopes());
             final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(getDependencyGraphBuilder(), getSession(), getProject(),
-                    getHubProjectName(),
-                    getHubVersionName());
+                    getHubProjectName(), getHubVersionName());
 
-            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getArtifactId(), getHubProjectName(),
+            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getArtifactId(), getHubCodeLocationName(), getHubProjectName(),
                     getHubVersionName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
@@ -340,6 +342,10 @@ public class BuildBOMGoal extends AbstractMojo {
         return hubServerConfigBuilder;
     }
 
+    public String getHubCodeLocationName() {
+        return hubCodeLocationName;
+    }
+
     public String getHubProjectName() {
         if (StringUtils.isNotBlank(hubProjectName)) {
             return hubProjectName;
@@ -370,6 +376,10 @@ public class BuildBOMGoal extends AbstractMojo {
 
     public void setOutputDirectory(final File outputDirectory) {
         this.outputDirectory = outputDirectory;
+    }
+
+    public void setHubCodeLocationName(final String hubCodeLocationName) {
+        this.hubCodeLocationName = hubCodeLocationName;
     }
 
     public void setHubProjectName(final String hubProjectName) {
