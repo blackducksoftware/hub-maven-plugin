@@ -23,9 +23,8 @@
  */
 package com.blackducksoftware.integration.maven;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,8 +36,8 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 
-import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
-import com.blackducksoftware.integration.hub.buildtool.Gav;
+import com.blackducksoftware.integration.hub.bdio.simple.model.DependencyNode;
+import com.blackducksoftware.integration.hub.bdio.simple.model.externalid.MavenExternalId;
 
 public class MavenDependencyExtractor {
     private static final String EXCEPTION_MSG_NO_DEPENDENCY_GRAPH = "Cannot build the dependency graph.";
@@ -85,10 +84,10 @@ public class MavenDependencyExtractor {
         final String groupId = project.getGroupId();
         final String artifactId = project.getArtifactId();
         final String version = versionName;
-        final Gav projectGav = new Gav(groupId, artifactId, version);
+        final MavenExternalId projectGav = new MavenExternalId(groupId, artifactId, version);
 
-        final List<DependencyNode> children = new ArrayList<>();
-        final DependencyNode root = new DependencyNode(projectGav, children);
+        final Set<DependencyNode> children = new LinkedHashSet<>();
+        final DependencyNode root = new DependencyNode(projectName, versionName, projectGav, children);
         for (final org.apache.maven.shared.dependency.graph.DependencyNode child : rootNode.getChildren()) {
             if (includedScopes.contains(child.getArtifact().getScope())) {
                 children.add(createCommonDependencyNode(child));
@@ -99,7 +98,7 @@ public class MavenDependencyExtractor {
             if (!excludedModules.contains(moduleProject.getArtifactId())) {
                 final DependencyNode moduleRootNode = getRootDependencyNode(dependencyGraphBuilder, session, moduleProject, moduleProject.getArtifactId(),
                         moduleProject.getVersion());
-                children.addAll(moduleRootNode.getChildren());
+                children.addAll(moduleRootNode.children);
             }
         }
 
@@ -108,8 +107,8 @@ public class MavenDependencyExtractor {
 
     private DependencyNode createCommonDependencyNode(
             final org.apache.maven.shared.dependency.graph.DependencyNode mavenDependencyNode) {
-        final Gav gav = createGavFromDependencyNode(mavenDependencyNode);
-        final List<DependencyNode> children = new ArrayList<>();
+        final MavenExternalId gav = createGavFromDependencyNode(mavenDependencyNode);
+        final Set<DependencyNode> children = new LinkedHashSet<>();
         final DependencyNode dependencyNode = new DependencyNode(gav, children);
 
         for (final org.apache.maven.shared.dependency.graph.DependencyNode child : mavenDependencyNode.getChildren()) {
@@ -119,13 +118,13 @@ public class MavenDependencyExtractor {
         return dependencyNode;
     }
 
-    private Gav createGavFromDependencyNode(
+    private MavenExternalId createGavFromDependencyNode(
             final org.apache.maven.shared.dependency.graph.DependencyNode mavenDependencyNode) {
         final String groupId = mavenDependencyNode.getArtifact().getGroupId();
         final String artifactId = mavenDependencyNode.getArtifact().getArtifactId();
         final String version = mavenDependencyNode.getArtifact().getVersion();
 
-        final Gav gav = new Gav(groupId, artifactId, version);
+        final MavenExternalId gav = new MavenExternalId(groupId, artifactId, version);
         return gav;
     }
 }

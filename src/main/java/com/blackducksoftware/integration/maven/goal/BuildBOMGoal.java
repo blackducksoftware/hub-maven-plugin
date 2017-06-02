@@ -62,9 +62,9 @@ import org.slf4j.LoggerFactory;
 
 import com.blackducksoftware.integration.exception.EncryptionException;
 import com.blackducksoftware.integration.exception.IntegrationException;
+import com.blackducksoftware.integration.hub.bdio.simple.model.DependencyNode;
 import com.blackducksoftware.integration.hub.builder.HubServerConfigBuilder;
 import com.blackducksoftware.integration.hub.buildtool.BuildToolHelper;
-import com.blackducksoftware.integration.hub.buildtool.DependencyNode;
 import com.blackducksoftware.integration.hub.buildtool.FlatDependencyListWriter;
 import com.blackducksoftware.integration.hub.buildtool.bdio.BdioDependencyWriter;
 import com.blackducksoftware.integration.hub.dataservice.policystatus.PolicyStatusDescription;
@@ -246,8 +246,7 @@ public class BuildBOMGoal extends AbstractMojo {
                     getHubProjectName(),
                     getHubVersionName());
 
-            BUILD_TOOL_HELPER.createFlatOutput(rootNode,
-                    getHubProjectName(), getHubVersionName(), getOutputDirectory());
+            BUILD_TOOL_HELPER.createFlatOutput(rootNode, getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_FLAT_DEPENDENCY_LIST_ERROR, e.getMessage()), e);
         }
@@ -263,8 +262,7 @@ public class BuildBOMGoal extends AbstractMojo {
             final DependencyNode rootNode = mavenDependencyExtractor.getRootDependencyNode(getDependencyGraphBuilder(), getSession(), getProject(),
                     getHubProjectName(), getHubVersionName());
 
-            BUILD_TOOL_HELPER.createHubOutput(rootNode, getProject().getArtifactId(), getHubCodeLocationName(), getHubProjectName(),
-                    getHubVersionName(), getOutputDirectory());
+            BUILD_TOOL_HELPER.createHubOutput(rootNode, getHubCodeLocationName(), getOutputDirectory());
         } catch (final IOException e) {
             throw new MojoFailureException(String.format(CREATE_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
@@ -314,7 +312,7 @@ public class BuildBOMGoal extends AbstractMojo {
         final PolicyStatusDescription policyStatusDescription = new PolicyStatusDescription(policyStatusItem);
         final String policyStatusMessage = policyStatusDescription.getPolicyStatusMessage();
         logger.info(policyStatusMessage);
-        if (VersionBomPolicyStatusOverallStatusEnum.IN_VIOLATION == policyStatusItem.getOverallStatus()) {
+        if (VersionBomPolicyStatusOverallStatusEnum.IN_VIOLATION == policyStatusItem.overallStatus) {
             throw new MojoFailureException(policyStatusMessage);
         }
     }
