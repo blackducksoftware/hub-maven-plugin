@@ -275,7 +275,7 @@ public class BuildBOMGoal extends AbstractMojo {
 
         try {
             BUILD_TOOL_HELPER.deployHubOutput(getHubServicesFactory(), getOutputDirectory(),
-                    getProject().getArtifactId());
+                    getHubProjectName());
         } catch (IntegrationException | IllegalArgumentException e) {
             throw new MojoFailureException(String.format(DEPLOY_HUB_OUTPUT_ERROR, e.getMessage()), e);
         }
